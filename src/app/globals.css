@@ -2,3 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
+.swal2-popup {
+  border-radius: 20px;
+}

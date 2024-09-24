@@ -3,12 +3,120 @@ import { RiArrowRightWideLine, RiArrowLeftWideLine } from "react-icons/ri";
 import { GrTransaction } from "react-icons/gr";
 import { useState } from "react";
 import { postAPI } from "../../services/fetchAPI";
+import Swal from "sweetalert2";
 
 export default function WalletActions() {
   const [showSelectedAction, setShowSelecetedAction] = useState(""); //deposit/withdraw
   const [continueAction, setContinueAction] = useState(false); // continue after card info added
   const [amount, setAmount] = useState("");
 
+  const [riskAmount, setRiskAmount] = useState(2000); // Onay gerektiren para miktarı
+  const [smsCode, setSmsCode] = useState(""); // Kullanıcının girdiği SMS kodu
+  const generatedCode = "123456"; // SMS ile gönderilecek örnek kod
+
+  // SMS gönderme işlemi (Burada fake bir SMS kodu gönderiliyor)
+  const sendSms = () => {
+    console.log(`SMS ile gönderilen kod: ${generatedCode}`);
+  };
+
+  //miktarın risk miktarından fazla olup olmadığını kontrol ediyoruz
+  const checkRiskAmount = async (amount) => {
+    if (amount > riskAmount) {
+      Swal.fire({
+        title: "Miktarı Onaylıyor musunuz?",
+        text: `Bu işlem ${amount} TL'lik bir yükleme. Devam etmek istiyor musunuz?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Evet",
+        cancelButtonText: "Hayır",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          sendSms();
+
+          let timerInterval;
+          let timeLeft = 60; // 60 saniye (1 dakika)
+
+          Swal.fire({
+            title: "SMS Onayı Gerekli",
+            html: `
+              <p>${riskAmount} TL'nin üzerinde bir işlem yapıyorsunuz.</p>
+              <p>Lütfen SMS ile gönderilen kodu girin:</p>
+              <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
+              <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
+            `,
+            showCancelButton: true,
+            confirmButtonText: "Onayla",
+            cancelButtonText: "İptal",
+            didOpen: () => {
+              const timerElement =
+                Swal.getHtmlContainer().querySelector("#timer");
+              timerInterval = setInterval(() => {
+                timeLeft -= 1;
+                timerElement.textContent = timeLeft;
+
+                if (timeLeft === 0) {
+                  clearInterval(timerInterval);
+                  Swal.close();
+                  Swal.fire(
+                    "Süre Doldu",
+                    "İşlem süresi dolduğu için iptal edildi.",
+                    "error"
+                  );
+                }
+              }, 1000);
+            },
+            willClose: () => {
+              clearInterval(timerInterval); // Zamanlayıcı durduruluyor
+            },
+            preConfirm: () => {
+              const inputCode =
+                Swal.getPopup().querySelector("#smsCodeInput").value;
+              if (!inputCode) {
+                Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
+              }
+              return inputCode;
+            },
+          }).then((result) => {
+            if (result.isConfirmed) {
+              if (result.value === generatedCode) {
+                Swal.fire(
+                  "Onaylandı!",
+                  "İşleminiz başarıyla tamamlandı.",
+                  "success"
+                );
+                console.log("İşlem başarıyla onaylandı.");
+                return true;
+              } else {
+                Swal.fire("Hatalı Kod", "Girdiğiniz SMS kodu yanlış.", "error");
+                return false;
+              }
+            }
+          });
+        } else {
+          Swal.fire(
+            "İşlem İptal Edildi",
+            "Yükleme işlemi iptal edildi.",
+            "error"
+          );
+          return false;
+        }
+      });
+    } else {
+      console.log("İşlem risk seviyesinin altında, direkt yapılabilir.");
+      return false;
+    }
+  };
+
+  // giriş yapmış kullanıcıdan o gün içinde yaptığı işlem sayısını kontrol edeceğiz eğer 5 den fazla işe uyarı verip daha fazla işlem yaptırmayacağız
+  const checkProcessAmount = async () => {};
+
+  //bakiye ekleme fonksiyonu
+  const addBalance = async (amount) => {
+    if (amount) {
+      const riskStatus = checkRiskAmount(amount);
+      console.log(riskStatus);
+    }
+  };
   async function handleApiRequest() {
     console.log("hi");
     const payload = { item1: "a", item2: "b", item3: 10 };
@@ -257,7 +365,7 @@ export default function WalletActions() {
                 value={amount}
               />
               <div className="flex w-full md:w-1/2 border-b-2 pb-10  p-2 justify-evenly">
-                {[500, 1000, 2000].map((i) => (
+                {[500, 1000, 3000].map((i) => (
                   <button
                     key={`item-${i}`}
                     onClick={() => setAmount(i)}
@@ -274,8 +382,14 @@ export default function WalletActions() {
                   Vazgeç
                 </button>
                 <button
-                  onClick={handleApiRequest}
-                  className="p-1 px-3 rounded  bg-purple-700 text-white"
+                  onClick={() => {
+                    if (showSelectedAction === "deposit") {
+                      addBalance(amount); // Bakiye yükleme işlemi
+                    } else if (showSelectedAction === "withdraw") {
+                      console.log("Çekim talebi oluştur.");
+                    }
+                  }}
+                  className="p-1 px-3 rounded bg-purple-700 text-white"
                 >
                   {showSelectedAction === "deposit"
                     ? "Bakiye Yükle"
