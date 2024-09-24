@@ -1,0 +1,295 @@
+"use client";
+import { RiArrowRightWideLine, RiArrowLeftWideLine } from "react-icons/ri";
+import { GrTransaction } from "react-icons/gr";
+import { useState } from "react";
+import { postAPI } from "../../services/fetchAPI";
+
+export default function WalletActions() {
+  const [showSelectedAction, setShowSelecetedAction] = useState(""); //deposit/withdraw
+  const [continueAction, setContinueAction] = useState(false); // continue after card info added
+  const [amount, setAmount] = useState("");
+
+  async function handleApiRequest() {
+    console.log("hi");
+    const payload = { item1: "a", item2: "b", item3: 10 };
+    const res = await postAPI("/test", { text: "hi" });
+    console.log(res);
+  }
+
+  return (
+    <div className="md:p-6 p-2  bg-white rounded-lg md:shadow-md">
+      {showSelectedAction === "" ? (
+        <div>
+          {/* Bakiye Kısmı */}
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-purple-800">
+              Cüzdan Bakiyem
+            </h2>
+            <div className="text-5xl font-bold mt-2 text-purple-900">0 TL</div>
+            <div className="text-xs text-gray-500 mt-1">
+              Hesap numarası: 32507319
+            </div>
+          </div>
+
+          {/* İşlem Butonları */}
+          <div className="flex justify-around mt-6">
+            <div className="flex flex-col items-center">
+              <button
+                onClick={() => setShowSelecetedAction("deposit")}
+                className="bg-purple-600 text-white p-3 rounded-lg   shadow "
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M21.9167 6.04166C21.9167 2.75097 19.249 0.0833282 15.9583 0.0833282C12.6676 0.0833282 10 2.75097 10 6.04166C10 9.33236 12.6676 12 15.9583 12C19.249 12 21.9167 9.33236 21.9167 6.04166ZM16.5007 6.58334L16.5012 9.29484C16.5012 9.594 16.2587 9.83651 15.9595 9.83651C15.6604 9.83651 15.4179 9.594 15.4179 9.29484L15.4174 6.58334H12.7036C12.4047 6.58334 12.1624 6.34082 12.1624 6.04167C12.1624 5.74252 12.4047 5.5 12.7036 5.5H15.4172L15.4167 2.79024C15.4167 2.49109 15.6592 2.24857 15.9583 2.24857C16.2575 2.24857 16.5 2.49109 16.5 2.79024L16.5005 5.5H19.2046C19.5035 5.5 19.7458 5.74252 19.7458 6.04167C19.7458 6.34082 19.5035 6.58334 19.2046 6.58334H16.5007ZM18.6667 18.7708V12.5437C19.2526 12.2993 19.7985 11.978 20.2917 11.5925V18.7708C20.2917 20.4162 18.9578 21.75 17.3125 21.75H3.77083C1.82633 21.75 0.25 20.1737 0.25 18.2292V4.95833C0.25 4.92483 0.252027 4.8918 0.255966 4.85937C0.252011 4.80259 0.25 4.74528 0.25 4.68749C0.25 3.3413 1.34131 2.24999 2.6875 2.24999H10.0236C9.70236 2.75181 9.44299 3.29707 9.25629 3.87499H2.6875C2.23877 3.87499 1.875 4.23876 1.875 4.68749C1.875 5.13623 2.23877 5.49999 2.6875 5.49999H8.93719C8.92359 5.67877 8.91667 5.85941 8.91667 6.04166C8.91667 6.41007 8.94496 6.77186 8.99949 7.12499H2.6875C2.40261 7.12499 2.12913 7.07612 1.875 6.9863V18.2292C1.875 19.2762 2.72379 20.125 3.77083 20.125H17.3125C18.0604 20.125 18.6667 19.5187 18.6667 18.7708ZM14.6042 13.0833C14.1554 13.0833 13.7917 13.4471 13.7917 13.8958C13.7917 14.3446 14.1554 14.7083 14.6042 14.7083H16.7708C17.2196 14.7083 17.5833 14.3446 17.5833 13.8958C17.5833 13.4471 17.2196 13.0833 16.7708 13.0833H15.9583H14.6042Z"
+                    fill="white"
+                  ></path>
+                </svg>
+              </button>
+              <span className="mt-1 text-sm text-purple-600 font-medium">
+                Yükle
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <button
+                onClick={() => setShowSelecetedAction("withdraw")}
+                className="bg-purple-600 text-white p-3 rounded-lg shadow"
+              >
+                <GrTransaction size={24} />
+              </button>
+              <span className="mt-1 text-sm text-purple-600 font-medium">
+                Çek
+              </span>
+            </div>
+          </div>
+
+          {/* Son İşlemler */}
+          <div className="mt-10 mx-auto max-w-xl">
+            <div className="flex justify-between">
+              <h3 className="font-semibold text-lg text-black">
+                Son İşlemlerim
+              </h3>
+              <a className="underline decoration-1 text-purple-900" href="">
+                Tümü
+              </a>
+            </div>
+            <ul className="mt-4 space-y-2">
+              <li className="">
+                <button className="w-full flex p-4 border rounded-lg justify-between items-center text-sm shadow">
+                  <span className="font-medium">Bakiye Yüklendi </span>
+                  <span className="flex justify-center items-center gap-x-5">
+                    <span className="flex flex-col gap-y-1">
+                      <span className="text-green-600 font-medium">
+                        +800,00 TL
+                      </span>
+                      <div className="">10 Eylül</div>
+                    </span>
+                    <span className="p-1">
+                      <RiArrowRightWideLine size={24} />
+                    </span>
+                  </span>
+                </button>
+              </li>
+              <li className="">
+                <button className="w-full flex p-4 border rounded-lg justify-between items-center text-sm shadow">
+                  <span className="font-medium">Hizmet satın alındı </span>
+                  <span className="flex justify-center items-center gap-x-5">
+                    <span className="flex flex-col gap-y-1">
+                      <span className="text-red-600 font-medium">
+                        -100,00 TL
+                      </span>
+                      <div className="">19 Ekim</div>
+                    </span>
+                    <span className="p-1">
+                      <RiArrowRightWideLine size={24} />
+                    </span>
+                  </span>
+                </button>
+              </li>
+              <li className="">
+                <button className="w-full flex p-4 border rounded-lg justify-between items-center text-sm shadow">
+                  <span className="font-medium">Hizmet satın alındı </span>
+                  <span className="flex justify-center items-center gap-x-5">
+                    <span className="flex flex-col gap-y-1">
+                      <span className="text-red-600 font-medium">
+                        -800,00 TL
+                      </span>
+                      <div className="">1 Eylül</div>
+                    </span>
+                    <span className="p-1">
+                      <RiArrowRightWideLine size={24} />
+                    </span>
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      ) : !continueAction ? (
+        <div>
+          <div className="flex gap-x-3">
+            <button onClick={() => setShowSelecetedAction("")}>
+              <RiArrowLeftWideLine className="text-purple-800" size={24} />
+            </button>
+            <div>
+              <h4 className="text-purple-600 font-medium uppercase">
+                {showSelectedAction === "deposit"
+                  ? "Para Yükle"
+                  : showSelectedAction === "withdraw"
+                  ? "Para Çek"
+                  : ""}
+              </h4>
+              <h3 className="text-2xl font-semibold text-purple-900">
+                {showSelectedAction === "deposit"
+                  ? "Banka/Kredi Kartından Cüzdanına Para Yükle"
+                  : showSelectedAction === "withdraw"
+                  ? "Cüzdanından Banka Hesabına Para Çek"
+                  : ""}
+              </h3>
+            </div>
+          </div>
+          <div className="mt-10 md:ml-10 pb-4 ">
+            <div className="w-full lg:w-1/2">
+              {/**showSelectedAction === "deposit"
+                ? "Hesabına nasıl para yüklemek istersin?"
+                : showSelectedAction === "withdraw"
+                ? "Cüzdanından Para Çek"
+                : ""*/}
+              {showSelectedAction === "deposit" ? (
+                <div className="flex flex-col gap-y-5">
+                  <input
+                    type="text"
+                    placeholder="Kart numarası"
+                    className="border p-2 rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Kart üzerindeki isim"
+                    className="border p-2 rounded-lg"
+                  />
+                  <div className="flex justify-between gap-x-3">
+                    <input
+                      type="text"
+                      placeholder="Son kullanım tarihi"
+                      className="border px-1 py-2 p-2 rounded-lg w-1/2"
+                    />
+                    <input
+                      type="text"
+                      placeholder="CVV"
+                      className="border px-1 py-2 rounded-lg w-1/2"
+                    />
+                  </div>
+                </div>
+              ) : showSelectedAction === "withdraw" ? (
+                <div className="flex flex-col gap-y-5">
+                  <input
+                    type="text"
+                    placeholder="IBAN"
+                    className="border p-2 rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Alıcı hesap adı"
+                    className="border p-2 rounded-lg"
+                  />
+                </div>
+              ) : (
+                ""
+              )}
+            </div>
+            <div className=" mt-5 w-full  lg:w-1/2 flex gap-x-3 ">
+              <button className="border p-1 w-1/2 rounded-lg bg-gray-100 text-gray-500">
+                Vazgeç
+              </button>
+              <button
+                onClick={() => setContinueAction(true)}
+                className="border p-1 w-1/2 rounded-lg bg-green-400 text-gray-50"
+              >
+                Devam Et
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+      {continueAction ? (
+        <div>
+          <div className="flex gap-x-3">
+            <button onClick={() => setContinueAction(false)}>
+              <RiArrowLeftWideLine className="text-purple-800" size={24} />
+            </button>
+            <div>
+              <h4 className="text-purple-600 font-medium uppercase">
+                {showSelectedAction === "deposit"
+                  ? "Para Yükle"
+                  : showSelectedAction === "withdraw"
+                  ? "Para Çek"
+                  : ""}
+              </h4>
+              <h3 className="text-2xl font-semibold text-purple-900">
+                {showSelectedAction === "deposit"
+                  ? "Yüklenecek miktarı seçiniz"
+                  : showSelectedAction === "withdraw"
+                  ? "Çekme talebi oluşturalacak miktarı seçiniz"
+                  : ""}
+              </h3>
+            </div>
+          </div>
+          <div className="mt-16">
+            <div className="flex flex-col gap-y-3 items-center">
+              <div>Miktar seçiniz</div>
+              <input
+                onChange={(value) => setAmount(value.target.value)}
+                placeholder="0"
+                type="text"
+                className={`text-center p-3 w-1/2 border-black  border-b-2 flex justify-center items-baseline text-5xl font-medium outline-none ${
+                  amount === 0 ? "text-gray-500" : "text-black"
+                }`}
+                value={amount}
+              />
+              <div className="flex w-full md:w-1/2 border-b-2 pb-10  p-2 justify-evenly">
+                {[500, 1000, 2000].map((i) => (
+                  <button
+                    key={`item-${i}`}
+                    onClick={() => setAmount(i)}
+                    className={`border p-1 px-3 rounded-2xl ${
+                      i === amount ? "bg-purple-300" : ""
+                    }`}
+                  >
+                    {i}
+                  </button>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 text-center gap-x-3 w-1/2">
+                <button className="p-1 px-3 rounded  bg-gray-100">
+                  Vazgeç
+                </button>
+                <button
+                  onClick={handleApiRequest}
+                  className="p-1 px-3 rounded  bg-purple-700 text-white"
+                >
+                  {showSelectedAction === "deposit"
+                    ? "Bakiye Yükle"
+                    : showSelectedAction === "withdraw"
+                    ? "Talep oluştur"
+                    : ""}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+    </div>
+  );
+}
