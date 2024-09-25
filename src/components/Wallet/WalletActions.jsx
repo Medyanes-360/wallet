@@ -17,109 +17,142 @@ export default function WalletActions() {
   const [smsCode, setSmsCode] = useState(""); // Kullanıcının girdiği SMS kodu
   const generatedCode = "123456"; // SMS ile gönderilecek örnek kod
 
+  const [processAmount, setProcessAmount] = useState(4); // giriş yapmış kullanıcıdan alacağımız o gün yaptığı işlem sayısı
+
   // SMS gönderme işlemi (Burada fake bir SMS kodu gönderiliyor)
   const sendSms = () => {
     console.log(`SMS ile gönderilen kod: ${generatedCode}`);
   };
 
+  //günlük yapılan işlem saysını kontrol ediyoruz kontrol ediyoruz
+  const checkProcessAmount = async () => {
+    if (processAmount > 5) {
+      await Swal.fire({
+        title: "Uyarı",
+        text: "Bugün 5'ten fazla işlem yaptınız!",
+        icon: "warning",
+        confirmButtonText: "Tamam",
+      });
+      return false; // İşlem sayısı sınırını aştı, daha fazla işlem yapılamaz
+    } else if (processAmount === 4) {
+      const result = await Swal.fire({
+        title: "Son İşlem Uyarısı",
+        text: "Bu, bugün yapabileceğiniz son işlem. Devam etmek istiyor musunuz?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Evet",
+        cancelButtonText: "Hayır",
+      });
+
+      if (result.isConfirmed) {
+        return true; // Kullanıcı onayladı, devam edebilir
+      } else {
+        return false; // Kullanıcı iptal etti, işlem yapılmıyor
+      }
+    } else {
+      return true; // İşlem sayısı uygun
+    }
+  };
+
   //miktarın risk miktarından fazla olup olmadığını kontrol ediyoruz
   const checkRiskAmount = async (amount) => {
     if (amount > riskAmount) {
-      Swal.fire({
+      const result = await Swal.fire({
         title: "Miktarı Onaylıyor musunuz?",
         text: `Bu işlem ${amount} TL'lik bir yükleme. Devam etmek istiyor musunuz?`,
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "Evet",
         cancelButtonText: "Hayır",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          sendSms();
-
-          let timerInterval;
-          let timeLeft = 60; // 60 saniye (1 dakika)
-
-          Swal.fire({
-            title: "SMS Onayı Gerekli",
-            html: `
-              <p>${riskAmount} TL'nin üzerinde bir işlem yapıyorsunuz.</p>
-              <p>Lütfen SMS ile gönderilen kodu girin:</p>
-              <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
-              <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
-            `,
-            showCancelButton: true,
-            confirmButtonText: "Onayla",
-            cancelButtonText: "İptal",
-            didOpen: () => {
-              const timerElement =
-                Swal.getHtmlContainer().querySelector("#timer");
-              timerInterval = setInterval(() => {
-                timeLeft -= 1;
-                timerElement.textContent = timeLeft;
-
-                if (timeLeft === 0) {
-                  clearInterval(timerInterval);
-                  Swal.close();
-                  Swal.fire(
-                    "Süre Doldu",
-                    "İşlem süresi dolduğu için iptal edildi.",
-                    "error"
-                  );
-                }
-              }, 1000);
-            },
-            willClose: () => {
-              clearInterval(timerInterval); // Zamanlayıcı durduruluyor
-            },
-            preConfirm: () => {
-              const inputCode =
-                Swal.getPopup().querySelector("#smsCodeInput").value;
-              if (!inputCode) {
-                Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
-              }
-              return inputCode;
-            },
-          }).then((result) => {
-            if (result.isConfirmed) {
-              if (result.value === generatedCode) {
-                Swal.fire(
-                  "Onaylandı!",
-                  "İşleminiz başarıyla tamamlandı.",
-                  "success"
-                );
-                console.log("İşlem başarıyla onaylandı.");
-                return true;
-              } else {
-                Swal.fire("Hatalı Kod", "Girdiğiniz SMS kodu yanlış.", "error");
-                return false;
-              }
-            }
-          });
-        } else {
-          Swal.fire(
-            "İşlem İptal Edildi",
-            "Yükleme işlemi iptal edildi.",
-            "error"
-          );
-          return false;
-        }
       });
+
+      if (result.isConfirmed) {
+        sendSms();
+
+        let timerInterval;
+        let timeLeft = 60; // 60 saniye (1 dakika)
+
+        const smsResult = await Swal.fire({
+          title: "SMS Onayı Gerekli",
+          html: `
+            <p>${riskAmount} TL'nin üzerinde bir işlem yapıyorsunuz.</p>
+            <p>Lütfen SMS ile gönderilen kodu girin:</p>
+            <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
+            <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
+          `,
+          showCancelButton: true,
+          confirmButtonText: "Onayla",
+          cancelButtonText: "İptal",
+          didOpen: () => {
+            const timerElement =
+              Swal.getHtmlContainer().querySelector("#timer");
+            timerInterval = setInterval(() => {
+              timeLeft -= 1;
+              timerElement.textContent = timeLeft;
+
+              if (timeLeft === 0) {
+                clearInterval(timerInterval);
+                Swal.close();
+                Swal.fire(
+                  "Süre Doldu",
+                  "İşlem süresi dolduğu için iptal edildi.",
+                  "error"
+                );
+              }
+            }, 1000);
+          },
+          willClose: () => {
+            clearInterval(timerInterval); // Zamanlayıcı durduruluyor
+          },
+          preConfirm: () => {
+            const inputCode =
+              Swal.getPopup().querySelector("#smsCodeInput").value;
+            if (!inputCode) {
+              Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
+            }
+            return inputCode;
+          },
+        });
+
+        if (smsResult.isConfirmed) {
+          if (smsResult.value === generatedCode) {
+            Swal.fire(
+              "Onaylandı!",
+              "İşleminiz başarıyla tamamlandı.",
+              "success"
+            );
+            console.log("İşlem başarıyla onaylandı.");
+            return true;
+          } else {
+            Swal.fire("Hatalı Kod", "Girdiğiniz SMS kodu yanlış.", "error");
+            return false;
+          }
+        }
+      } else {
+        Swal.fire(
+          "İşlem İptal Edildi",
+          "Yükleme işlemi iptal edildi.",
+          "error"
+        );
+        return false;
+      }
     } else {
       console.log("İşlem risk seviyesinin altında, direkt yapılabilir.");
-      return false;
+      return true;
     }
   };
 
-  // giriş yapmış kullanıcıdan o gün içinde yaptığı işlem sayısını kontrol edeceğiz eğer 5 den fazla ise uyarı verip daha fazla işlem yaptırmayacağız
-  const checkProcessAmount = async () => {};
-
-  //bakiye ekleme fonksiyonu
+  // Bakiye ekleme fonksiyonu
   const addBalance = async (amount) => {
     if (amount) {
-      const riskStatus = checkRiskAmount(amount);
-      console.log(riskStatus);
+      const processStatus = await checkProcessAmount(); // Günlük işlem sayısını kontrol et
+      if (processStatus) {
+        const riskStatus = await checkRiskAmount(amount); // Miktarı kontrol et
+        console.log(riskStatus);
+      }
     }
   };
+
   async function handleApiRequest() {
     console.log("hi");
     const payload = { item1: "a", item2: "b", item3: 10 };
@@ -249,7 +282,7 @@ export default function WalletActions() {
             ifSavedCardUsed
               ? setActionStep((val) => val - 2)
               : setActionStep((val) => val - 1);
-            setIfSavedCardUsed(false)
+            setIfSavedCardUsed(false);
           }}
         >
           <RiArrowLeftWideLine className="text-purple-800" size={24} />
@@ -271,7 +304,7 @@ export default function WalletActions() {
             ifSavedCardUsed
               ? setActionStep((val) => val - 2)
               : setActionStep((val) => val - 1);
-            setIfSavedCardUsed(false)
+            setIfSavedCardUsed(false);
           }}
         >
           <RiArrowLeftWideLine className="text-purple-800" size={24} />
