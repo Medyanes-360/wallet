@@ -29,7 +29,7 @@ export default function ActionStep({
             </h3>
           </div>
         </div>
-        <div className="border-b pb-5 flex flex-col gap-y-5 w-full md:w-3/5 ml-8">
+        <div className="border-b pb-5 flex flex-col gap-y-5 w-full md:w-3/5 md:ml-8">
           <input
             type="text"
             placeholder="Kart numarası"
@@ -52,8 +52,20 @@ export default function ActionStep({
               className="border px-1 py-3 rounded-lg w-1/2"
             />
           </div>
+          <div className="flex justify-center items-center gap-x-3">
+            <input
+              className="w-4 h-4"
+              type="checkbox"
+              name="saveCard"
+              id="saveCard"
+            />
+            <label className="text-gray-400 text-sm" htmlFor="saveCard">
+              Kart bilgilerini daha sonra kullanmak için kaydetmek ister
+              misiniz?
+            </label>
+          </div>
         </div>
-        <div className=" mt-5  ml-8  md:w-1/2 flex gap-x-3 ">
+        <div className=" mt-5  md:ml-8  md:w-1/2 flex gap-x-3 ">
           <button
             onClick={() => setActionStep(0)}
             className="border p-1 w-1/2 rounded-lg bg-gray-100 text-gray-500"
@@ -90,7 +102,7 @@ export default function ActionStep({
             </h3>
           </div>
         </div>
-        <div className="border-b pb-5 flex flex-col gap-y-5 w-full md:w-3/5 ">
+        <div className="border-b pb-5 flex flex-col gap-y-5 w-full md:w-3/5 md:ml-8">
           <input
             type="text"
             placeholder="IBAN"
@@ -101,8 +113,20 @@ export default function ActionStep({
             placeholder="Alıcı hesap adı"
             className="border p-2 rounded-lg"
           />
+          <div className="flex justify-center items-center gap-x-3">
+            <input
+              className="w-5 h-5"
+              type="checkbox"
+              name="saveCard"
+              id="saveCard"
+            />
+            <label className="text-gray-400 text-sm" htmlFor="saveCard">
+              Banka hesap bilgilerini daha sonra kullanmak için kaydetmek ister
+              misiniz?
+            </label>
+          </div>
         </div>
-        <div className=" mt-5  ml-8  md:w-1/2 flex gap-x-3 ">
+        <div className=" mt-5  md:ml-8  md:w-1/2 flex gap-x-3 ">
           <button
             onClick={() => setActionStep(0)}
             className="border p-1 w-1/2 rounded-lg bg-gray-100 text-gray-500"

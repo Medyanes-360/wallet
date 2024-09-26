@@ -14,7 +14,6 @@ export default function WalletActions() {
 
   const [actionStep, setActionStep] = useState(0); // işlem basamağı
 
- 
   const Balance = () => {
     return (
       <div className="text-center">
@@ -76,17 +75,23 @@ export default function WalletActions() {
   };
   const LastActions = () => {
     return (
-      <div className="mt-10 mx-auto max-w-xl">
+      <div className="mt-10 mx-auto max-w-xl ">
         <div className="flex justify-between">
           <h3 className="font-semibold text-lg text-black">Son İşlemlerim</h3>
           <a className="underline decoration-1 text-purple-900" href="">
             Tümü
           </a>
         </div>
-        <ul className="mt-4 space-y-2">
+        <ul className="mt-4 shadow border rounded-lg divide-y">
           <li className="">
-            <button className="w-full flex p-4 border rounded-lg justify-between items-center text-sm shadow">
-              <span className="font-medium">Bakiye Yüklendi </span>
+            <button className="w-full flex p-4  justify-between items-center text-sm ">
+              <span className="flex justify-center items-center gap-x-5">
+                <span>icon</span>
+                <span className="flex flex-col gap-y-3">
+                  <span className="font-medium">Bakiye Yüklendi </span>
+                  <span className="text-xm">Bakiye Yüklendi </span>
+                </span>
+              </span>
               <span className="flex justify-center items-center gap-x-5">
                 <span className="flex flex-col gap-y-1">
                   <span className="text-green-600 font-medium">+800,00 TL</span>
@@ -99,7 +104,7 @@ export default function WalletActions() {
             </button>
           </li>
           <li className="">
-            <button className="w-full flex p-4 border rounded-lg justify-between items-center text-sm shadow">
+            <button className="w-full flex p-4  justify-between items-center text-sm">
               <span className="font-medium">Hizmet satın alındı </span>
               <span className="flex justify-center items-center gap-x-5">
                 <span className="flex flex-col gap-y-1">
@@ -113,7 +118,7 @@ export default function WalletActions() {
             </button>
           </li>
           <li className="">
-            <button className="w-full flex p-4 border rounded-lg justify-between items-center text-sm shadow">
+            <button className="w-full flex p-4  justify-between items-center text-sm">
               <span className="font-medium">Hizmet satın alındı </span>
               <span className="flex justify-center items-center gap-x-5">
                 <span className="flex flex-col gap-y-1">
