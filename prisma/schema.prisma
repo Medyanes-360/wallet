@@ -7,9 +7,80 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model TestVal {
-  id   String @id @default(auto()) @map("_id") @db.ObjectId
-  text String
+model User {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  email       String    @unique
+  password    String // Store hashed passwords
+  fullName    String
+  phoneNumber String?   @unique
+  dateOfBirth DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isVerified  Boolean   @default(false) // For email verification
+  isBlocked   Boolean   @default(false) // To block suspicious accounts
+  role        UserRole  @default(USER) // User role (USER, ADMIN, etc.)
+
+  wallet   Wallet? @relation(fields: [walletId], references: [id])
+  walletId String? @unique @db.ObjectId
+
+  bankAccounts BankAccount[] // Relation to bank accounts owned by the user
+
+  transactions Transaction[] // Relation to transactions made by the user
+  paymentLogs  PaymentLog[] // Relation to payment logs made by the user
+}
+
+model Wallet {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @unique @db.ObjectId
+  balance   Float    @default(0.0)
+  currency  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User        User?
+  Transaction Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  walletId    String   @db.ObjectId
+  userId      String?  @db.ObjectId
+  type        String //Money deposit withdraw transfer
+  amount      Float
+  status      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  description String?
+
+  PaymentLog PaymentLog?
+  Wallet     Wallet      @relation(fields: [walletId], references: [id])
+  User       User?       @relation(fields: [userId], references: [id])
+}
+
+model PaymentLog {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  transactionId String?  @unique @db.ObjectId
+  amount        Float
+  timestamp     DateTime @default(now())
+  status        String
+
+  User        User         @relation(fields: [userId], references: [id])
+  Transaction Transaction? @relation(fields: [transactionId], references: [id])
+}
+
+model BankAccount {
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String @db.ObjectId
+  accountNumber String @unique
+  balance       Float  @default(0)
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }
 
 model User {
