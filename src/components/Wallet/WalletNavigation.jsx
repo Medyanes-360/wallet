@@ -1,10 +1,8 @@
 "use client";
-import { FaWallet,FaListUl } from "react-icons/fa";
-
+import { FaWallet, FaListUl } from "react-icons/fa";
 import NavigationItem from "./NavigationItem";
-import { useState } from "react";
 
-export default function WalletNavigation({ page,setPage }) {
+export default function WalletNavigation({ page, setPage }) {
   const navigationItems = [
     {
       id: "wallet",
@@ -19,7 +17,7 @@ export default function WalletNavigation({ page,setPage }) {
   ];
 
   return (
-    <div className="min-h-full ">
+    <div className="min-h-full">
       <div className="border-b p-4 mb-5">
         <h3 className="text-lg font-medium text-purple-800">Cüzdanım</h3>
       </div>

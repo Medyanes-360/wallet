@@ -3,14 +3,13 @@ import prisma from "../../prisma";
 import logPaymentAttempt from "../services/logPaymentAttempt";
 
 export const config = {
-  matcher: ["/api/payment"],
+  matcher: ["/api/withdraw"],
 };
 
 // Transaction limits
-const DAILY_PAYMENT_LIMIT = 5;
-const MAX_AMOUNT = 10000;
+const DAILY_WITHDRAW_LIMIT = 5;
 
-export const validatePaymentMiddleware = async (request) => {
+export const validateWithdrawMiddleware = async (request) => {
   const { userId, amount, transactionId, isPaymentVerified } =
     await request.json();
 
@@ -24,10 +23,10 @@ export const validatePaymentMiddleware = async (request) => {
   }
 
   // Fetch payment attempts made by the user today
-  const todayPayments = await prisma.transaction.findMany({
+  const todayWithdraw = await prisma.transaction.findMany({
     where: {
       walletId: user.walletId,
-      type: "payment",
+      type: "withdraw",
       createdAt: {
         gte: new Date(new Date().setHours(0, 0, 0, 0)), // Start of the day
         lt: new Date(new Date().setHours(23, 59, 59, 999)), // End of the day
@@ -36,25 +35,47 @@ export const validatePaymentMiddleware = async (request) => {
   });
 
   // Check daily payment limit
-  if (todayPayments.length >= DAILY_PAYMENT_LIMIT) {
-    await logPaymentAttempt(userId, amount, transactionId, "Daily payment limit exceeded");
+  if (todayWithdraw.length >= DAILY_WITHDRAW_LIMIT) {
+    await logPaymentAttempt(
+      userId,
+      amount,
+      transactionId,
+      "Daily payment limit exceeded"
+    );
     return NextResponse.json({
       status: 403,
       message: "Daily payment limit exceeded",
     });
   }
 
-  // Check maximum allowed payment amount
-  if (amount > MAX_AMOUNT) {
+  // Fetch user's wallet
+  const wallet = await prisma.wallet.findUnique({
+    where: {
+      id: user.walletId,
+    },
+  });
+
+  // Check if wallet exists
+  if (!wallet) {
+    //? DO WE NEED TO LOG THIS STATEMENT AS WELL?
+    await logPaymentAttempt(userId, amount, transactionId, "Wallet not found");
+    return NextResponse.json({
+      status: 404,
+      message: "Wallet not found",
+    });
+  }
+
+  // Check if the withdrawal amount exceeds the available balance
+  if (amount > wallet.balance) {
     await logPaymentAttempt(
       userId,
       amount,
       transactionId,
-      `Maximum transaction amount exceeded (Limit: ${MAX_AMOUNT} TL)`
+      "Insufficient funds"
     );
     return NextResponse.json({
       status: 403,
-      message: `Maximum transaction amount exceeded (Limit: ${MAX_AMOUNT} TL)`,
+      message: "Insufficient funds",
     });
   }
 
