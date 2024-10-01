@@ -1,5 +1,5 @@
-import WalletLayout from "./layout";
+import MainComponent from "../../components/Wallet/MainComponent";
 
 export default function Wallet() {
-  return <WalletLayout />;
+  return <MainComponent />;
 }

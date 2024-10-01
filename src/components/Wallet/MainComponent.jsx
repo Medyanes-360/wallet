@@ -1,11 +1,10 @@
 "use client";
-import { div } from "framer-motion/client";
-import Signin from "../../components/Wallet/Signin";
-import WalletMain from "../../components/Wallet/WalletMain";
-import WalletNavigation from "../../components/Wallet/WalletNavigation";
+import Signin from "./Signin";
+import WalletMain from "./WalletMain";
+import WalletNavigation from "./WalletNavigation";
 import { useState } from "react";
 
-export default function WalletLayout({ children }) {
+export default function MainComponent() {
   const [page, setPage] = useState("wallet"); // wallet,transactions
   const [login, setLogin] = useState(false);
 
