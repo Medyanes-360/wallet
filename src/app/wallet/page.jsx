@@ -1,5 +1,5 @@
-export default function Wallet(){
-  return (
-    <div className="text-red-500 text-3xl">Page Yeri</div>
-  )
+import WalletLayout from "./layout";
+
+export default function Wallet() {
+  return <WalletLayout />;
 }
