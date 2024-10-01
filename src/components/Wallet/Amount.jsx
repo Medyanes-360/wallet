@@ -176,9 +176,10 @@ export default function Amount({
           <RiArrowLeftWideLine className="text-purple-800" size={24} />
         </button>
         <div>
-          <h4 className="text-purple-600 font-medium uppercase">Para Çek</h4>
+          <h4 className="text-purple-600 font-medium uppercase">{showSelectedAction === "deposit" ? "Para Yatır" : "Para Çek"}</h4>
           <h3 className="text-2xl font-semibold text-purple-900">
-            Cüzdanından Banka Hesabına Para Çek
+            
+            {showSelectedAction === "deposit" ? "Banka Hesabından Cüzdanına Para Yükle" : "Cüzdanından Banka Hesabına Para Çek"}
           </h3>
         </div>
       </div>

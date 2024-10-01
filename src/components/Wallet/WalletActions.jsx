@@ -1,5 +1,5 @@
 "use client";
-import { RiArrowRightWideLine, RiArrowLeftWideLine } from "react-icons/ri";
+import { RiArrowRightWideLine } from "react-icons/ri";
 import { GrTransaction } from "react-icons/gr";
 import { useState } from "react";
 import CardMain from "./CardMain";

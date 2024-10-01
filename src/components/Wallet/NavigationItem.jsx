@@ -4,7 +4,7 @@ export default function NavigationItem({ id, icon, title, page, setPage }) {
       <div
         className={`grid grid-cols-4 gap-x-5 p-3 ${
           page === id
-            ? "border-l-4 border-purple-400 bg-gradient-to-r from-purple-50 via-purple-200 to-purple-50"
+            ? "border-l-4 border-purple-400 bg-gradient-to-r from-purple-50 via-purple-100 to-gray-100"
             : ""
         }`}
       >

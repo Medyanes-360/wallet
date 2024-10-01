@@ -17,3 +17,34 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+/* signin şifre girme yeri için */
+.character--selected {
+  position: relative;
+}
+ 
+.character--selected:not(.character--filled) {
+  opacity: .8;
+}
+ 
+.character--selected:not(.character--filled)::after {
+  content: "";
+  width: 1px;
+  height: 25px;
+  background-color: #333;
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: blink 1s infinite step-end;
+}
+ 
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+/** ---- */

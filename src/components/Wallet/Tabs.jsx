@@ -8,11 +8,19 @@ export default function Tabs() {
   const [tabWidth, setTabWidth] = useState(0);
 
   useEffect(() => {
-    if (containerRef.current) {
-      // Container'ın genişliğini alıp 3'e bölüyoruz
-      setTabWidth(containerRef.current.offsetWidth / 3);
-    }
-  }, [containerRef.current]);
+    const handleResize = () => {
+      if (containerRef.current) {
+        // Container'ın genişliğini alıp 3'e bölüyoruz
+        const width = containerRef.current.offsetWidth / 3;
+        setTabWidth(width);
+      }
+    };
+
+    // Sayfa yüklendiğinde ve her pencere yeniden boyutlandırıldığında güncelle
+    window.addEventListener("resize", handleResize);
+    handleResize(); // İlk render sonrası genişliği hesapla
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Pozisyonları tutan yapı, pixel bazlı
   const positions = {
@@ -24,22 +32,24 @@ export default function Tabs() {
   return (
     <div
       ref={containerRef}
-      className="relative flex justify-around items-center space-x-4 bg-gray-100 p-4 rounded-full"
-      style={{ width: "300px" }} // Örnek genişlik, istediğin gibi değiştirebilirsin
+      className="relative flex justify-around w-full max-w-[304px] md:max-w-[600px] border items-center mx-auto bg-gray-200 py-2 rounded-lg"
+      // Mobilde 303px, masaüstünde 604.5px genişlikte
     >
       {/* Beyaz arka planı hareket ettiren element */}
       <motion.div
-        className="absolute bg-white rounded-full h-full"
-        style={{ width: `${tabWidth}px` }} // Her tab'ın genişliğine göre ayar
+        className="absolute bg-white rounded-lg py-4"
+        style={{ width: `${tabWidth-8}px` }} // Tab'ın genişliğine göre ayarlanmış width
         animate={{
-          left: positions[selected], // Pozisyona göre animasyon
+          left: `${positions[selected]}px`, // Pozisyona göre animasyon
         }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }} // Animasyon ayarları
       />
 
       {/* Tümü Butonu */}
       <button
-        className={`tab-item relative z-10 ${selected === "Tümü" ? "text-purple-600 font-medium" : "text-gray-500"}`}
+        className={`tab-item relative z-10 ${
+          selected === "Tümü" ? "text-purple-600 font-medium" : "text-gray-500"
+        }`}
         onClick={() => setSelected("Tümü")}
       >
         Tümü
@@ -47,7 +57,9 @@ export default function Tabs() {
 
       {/* Gelen Butonu */}
       <button
-        className={`tab-item relative z-10 ${selected === "Gelen" ? "text-purple-600 font-medium" : "text-gray-500"}`}
+        className={`tab-item relative z-10 ${
+          selected === "Gelen" ? "text-purple-600 font-medium" : "text-gray-500"
+        }`}
         onClick={() => setSelected("Gelen")}
       >
         Gelen
@@ -55,7 +67,9 @@ export default function Tabs() {
 
       {/* Giden Butonu */}
       <button
-        className={`tab-item relative z-10 ${selected === "Giden" ? "text-purple-600 font-medium" : "text-gray-500"}`}
+        className={`tab-item relative z-10 ${
+          selected === "Giden" ? "text-purple-600 font-medium" : "text-gray-500"
+        }`}
         onClick={() => setSelected("Giden")}
       >
         Giden

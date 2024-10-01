@@ -49,6 +49,17 @@ export default function ActionStep({
       .required("CVV zorunludur."),
   });
 
+  // IBAN doğrulaması ve isim için Yup şeması
+  const ibanSchema = Yup.object().shape({
+    iban: Yup.string()
+      .matches(/^[A-Z]{2}\d{2}[A-Z0-9]{1,26}$/, "Geçersiz IBAN numarası.")
+      .required("IBAN zorunludur."),
+
+    name: Yup.string()
+      .matches(/^[a-zA-Z\s]+$/, "Geçersiz isim formatı.")
+      .required("İsim zorunludur."),
+  });
+
   return (
     <div>
       <div className="flex gap-x-3 mb-5">
@@ -180,7 +191,86 @@ export default function ActionStep({
           )}
         </Formik>
       ) : (
-        <div>{/* Para Çek Formu */}</div>
+        <Formik
+          initialValues={{
+            iban: "TR",
+            ibanName: "",
+          }}
+          validationSchema={ibanSchema}
+          onSubmit={(values) => {
+            console.log("Iban Bilgileri", values);
+            setActionStep((val) => val + 1);
+          }}
+        >
+          {({ handleSubmit, setFieldValue, values }) => (
+            <Form className="flex flex-col gap-y-5 w-full  md:w-3/5 md:ml-8">
+              <div className="w-full">
+                <Field
+                  name="iban"
+                  type="text"
+                  value={values.iban}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    // Eğer kullanıcı "TR" kısmını silmeye çalışırsa buna izin verme
+                    if (inputValue.startsWith("TR")) {
+                      setFieldValue("iban", inputValue);
+                    } else {
+                      setFieldValue(
+                        "iban",
+                        "TR" + inputValue.replace("TR", "")
+                      );
+                    }
+                  }}
+                  placeholder="IBAN"
+                  className="border p-2 py-3 rounded-lg w-full"
+                />
+                <ErrorMessage
+                  name="iban"
+                  component="div"
+                  className="text-red-500 text-sm"
+                />
+              </div>
+              <div>
+                <Field
+                  name="ibanName"
+                  type="text"
+                  placeholder="Hesap Adı"
+                  className="border p-2 py-3 rounded-lg w-full"
+                />
+                <ErrorMessage
+                  name="ibanName"
+                  component="div"
+                  className="text-red-500 text-sm"
+                />
+              </div>
+              <div className="flex justify-left items-center gap-x-3">
+                <input
+                  className="w-4 h-4"
+                  type="checkbox"
+                  name="saveCard"
+                  id="saveCard"
+                />
+                <label className="text-gray-400 text-sm" htmlFor="saveCard">
+                  Kart bilgilerini kaydetmek ister misiniz?
+                </label>
+              </div>
+              <div className=" mt-5  flex gap-x-3 ">
+                <button
+                  onClick={() => setActionStep(0)}
+                  className="border p-1 w-1/2 rounded-lg bg-gray-100 text-gray-500"
+                >
+                  İptal et
+                </button>
+                <button
+                  type="submit"
+                  className="border p-1 w-1/2 rounded-lg bg-purple-600 text-gray-50"
+                >
+                  Devam Et
+                </button>
+              </div>
+            </Form>
+          )}
+        </Formik>
       )}
     </div>
   );
