@@ -14,8 +14,8 @@ export default function MainComponent() {
     )
   }else{
     return (
-      <div className="grid grid-cols-5  min-h-screen md:p-0">
-        <div className="h-screen md:col-span-1  bg-white">
+      <div className="grid grid-cols-5 min-h-screen md:p-0">
+        <div className="h-screen hidden md:block md:col-span-1  bg-white">
           <WalletNavigation page={page} setPage={setPage} />
         </div>
         <div
@@ -24,6 +24,9 @@ export default function MainComponent() {
           <WalletMain page={page}></WalletMain>
         </div>
         <div className="hidden md:block lg:col-span-1 lg:border md:bg-gray-50"></div>
+        <div className="md:hidden bottom-0 mb-3 w-full absolute z-10">
+          <WalletNavigation type="mobile" page={page} setPage={setPage} />
+        </div>
       </div>
     );
   }

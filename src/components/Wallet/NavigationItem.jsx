@@ -1,4 +1,41 @@
-export default function NavigationItem({ id, icon, title, page, setPage }) {
+import { button } from "framer-motion/client";
+
+export default function NavigationItem({
+  id,
+  icon,
+  title,
+  page,
+  setPage,
+  type = "desktop",
+}) {
+  // type= desktop/mobile
+
+  if (type === "mobile") {
+    return (
+      <button onClick={() => setPage(id)} className="block w-full">
+        <div
+          className={`flex justify-center items-center flex-col gap-1 ${
+            page === id ? "" : ""
+          }`}
+        >
+          <div
+            className={`col-span-1 flex justify-end items-center ${
+              page === id ? "text-purple-600" : ""
+            }`}
+          >
+            {icon}
+          </div>
+          <div
+            className={`col-span-3 text-left ${
+              page === id ? "text-purple-600" : ""
+            }`}
+          >
+            {title}
+          </div>
+        </div>
+      </button>
+    );
+  }
   return (
     <button onClick={() => setPage(id)} className="block w-full">
       <div

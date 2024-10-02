@@ -28,6 +28,25 @@ export default function ActionStep({
   setIfSavedCardUsed,
   setActionStep,
 }) {
+  function saveCard(values) {
+    const { cardNumber, cardName, expiryDate, cvv } = values; // Yeni kartı nesne olarak oluştur
+
+    // Mevcut kartları yerel depolamadan al
+    const saveRef = localStorage.getItem("saveCard");
+    let allCards = [];
+
+    if (saveRef) {
+      // Eğer kartlar varsa parse et ve yeni kartla birleştir
+      allCards = JSON.parse(saveRef);
+    }
+
+    // Yeni kartı listeye ekle
+    allCards.push(newCard);
+
+    // Güncellenmiş kartlar listesini yeniden localStorage'a kaydet
+    localStorage.setItem("saveCard", JSON.stringify(allCards));
+  }
+
   const cardSchema = Yup.object().shape({
     cardNumber: Yup.string()
       .matches(/^[0-9]{16}$/, "Kart numarası 16 haneli olmalı.")
@@ -92,14 +111,18 @@ export default function ActionStep({
             cardName: "",
             expiryDate: "",
             cvv: "",
+            saveCard: false,
           }}
           validationSchema={cardSchema}
           onSubmit={(values) => {
             console.log("Kart Bilgileri:", values);
             setActionStep((val) => val + 1);
+            if (values.saveCard) {
+              saveCard(values);
+            }
           }}
         >
-          {({ handleSubmit }) => (
+          {({ handleSubmit, values }) => (
             <Form className="border-b pb-5 flex flex-col gap-y-5 w-full md:w-3/5 md:ml-8">
               <div>
                 <Field
@@ -163,7 +186,7 @@ export default function ActionStep({
                 </div>
               </div>
               <div className="flex justify-left items-center gap-x-3">
-                <input
+                <Field
                   className="w-4 h-4"
                   type="checkbox"
                   name="saveCard"
@@ -172,6 +195,7 @@ export default function ActionStep({
                 <label className="text-gray-400 text-sm" htmlFor="saveCard">
                   Kart bilgilerini kaydetmek ister misiniz?
                 </label>
+                {values.saveCard ? "true" : "false"}
               </div>
               <div className=" mt-5  flex gap-x-3 ">
                 <button

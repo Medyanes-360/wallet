@@ -37,7 +37,7 @@ export default function Tabs() {
     >
       {/* Beyaz arka planı hareket ettiren element */}
       <motion.div
-        className="absolute bg-white rounded-lg py-4"
+        className={`absolute bg-white rounded-lg py-4 ${selected==="Tümü" ? "translate-x-1" : ("")}`}
         style={{ width: `${tabWidth-8}px` }} // Tab'ın genişliğine göre ayarlanmış width
         animate={{
           left: `${positions[selected]}px`, // Pozisyona göre animasyon

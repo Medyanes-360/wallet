@@ -56,7 +56,6 @@ export default function Signin({ setLogin }) {
               validChars="0-9"
               length={6}
               onChange={(event) => {
-                console.log(event);
                 setPassword(event);
               }}
               value={password}

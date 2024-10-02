@@ -137,7 +137,7 @@ export default function WalletActions() {
   };
 
   return (
-    <div className="md:p-6 p-2  bg-white rounded-lg md:shadow-md">
+    <div className="md:p-6 py-5 px-2  bg-white rounded-lg md:shadow-md">
       {actionStep === 0 ? (
         <div>
           <Balance />

@@ -47,8 +47,8 @@ export default function Transactions() {
         </div>
         <Tabs />
 
-        <div>
-          <ul className="mt-4 shadow border rounded-lg divide-y bg-white">
+        <div className="flex justify-center items-center  ">
+          <ul className="mt-4 w-full max-w-xl  shadow border rounded-lg divide-y bg-white">
             {testTransactions.map((item) => (
               <TransactionItem key={item.title} transactionData={item} />
             ))}
