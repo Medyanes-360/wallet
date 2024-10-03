@@ -9,12 +9,14 @@ export default function Amount({
   showSelectedAction,
   setAmount,
   setIfSavedCardUsed,
-  ifSavedCardUsed
+  ifSavedCardUsed,
 }) {
   const [riskAmount, setRiskAmount] = useState(2000); // Onay gerektiren para miktarı
   const [smsCode, setSmsCode] = useState(""); // Kullanıcının girdiği SMS kodu
   const generatedCode = "123456"; // SMS ile gönderilecek örnek kod
   const [processAmount, setProcessAmount] = useState(4); // giriş yapmış kullanıcıdan alacağımız o gün yaptığı işlem sayısı
+
+  const [smsWithdrawCode, setSmsWithdrawCode] = useState("123456"); // para çekimi için gelen kod
 
   const handleChange = (event) => {
     const value = event.target.value;
@@ -43,6 +45,180 @@ export default function Amount({
   // SMS gönderme işlemi (Burada fake bir SMS kodu gönderiliyor)
   const sendSms = () => {
     console.log(`SMS ile gönderilen kod: ${generatedCode}`);
+  };
+
+  // Kullanıcı IP'sini almak için ipify API'si
+  const getUserIP = async () => {
+    try {
+      const response = await fetch("https://api.ipify.org?format=json");
+      const data = await response.json();
+      return data.ip; // IP adresini döndürür
+    } catch (error) {
+      console.error("IP adresi alınırken hata oluştu:", error);
+      return null; // Hata durumunda null döner
+    }
+  };
+
+  // Sisteme kayıtlı IP adresi
+  const getRegisteredIP = async () => {
+    return "123.456.789.10";
+  };
+
+  //para çekme fonksiyonu
+  const getWithdraw = async (amount) => {
+    try {
+      // Kullanıcının mevcut IP'sini al
+      const userIP = await getUserIP();
+      const registeredIP = await getRegisteredIP();
+
+      // Eğer IP adresi farklıysa SMS onayı yap
+      if (userIP !== registeredIP) {
+        let timerInterval;
+        let timeLeft = 60;
+
+        // Farklı IP adresi için SMS doğrulaması
+        const smsIPResult = await Swal.fire({
+          title: "Farklı IP Tespit Edildi",
+          html: `
+              <p>Sisteme kayıtlı IP adresiniz: ${registeredIP}. Mevcut IP adresiniz: ${userIP}.</p>
+              <p>IP onayı için SMS ile gönderilen kodu girin:</p>
+              <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
+              <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
+            `,
+          showCancelButton: true,
+          confirmButtonText: "Onayla",
+          cancelButtonText: "İptal et",
+          didOpen: () => {
+            const timerElement =
+              Swal.getHtmlContainer().querySelector("#timer");
+            timerInterval = setInterval(() => {
+              timeLeft -= 1;
+              timerElement.textContent = timeLeft;
+
+              if (timeLeft === 0) {
+                clearInterval(timerInterval);
+                Swal.close();
+                Swal.fire(
+                  "Süre Doldu",
+                  "İşlem süresi dolduğu için iptal edildi.",
+                  "error"
+                );
+              }
+            }, 1000);
+          },
+          willClose: () => {
+            clearInterval(timerInterval);
+          },
+          preConfirm: () => {
+            const inputCode =
+              Swal.getPopup().querySelector("#smsCodeInput").value;
+            if (!inputCode) {
+              Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
+            }
+            return inputCode;
+          },
+        });
+
+        // Eğer SMS onayı tamamlandıysa
+        if (smsIPResult.isConfirmed) {
+          const smsCode = smsIPResult.value;
+          if (smsCode !== smsWithdrawCode) {
+            return Swal.fire({
+              title: "Hata!",
+              text: "Geçersiz SMS kodu.",
+              icon: "error",
+            });
+          }
+        } else {
+          return Swal.fire({
+            title: "İşlem İptal Edildi",
+            text: "IP doğrulaması yapılmadığı için işlem iptal edildi.",
+            icon: "error",
+          });
+        }
+      }
+
+      const confirmAmount = await Swal.fire({
+        title: "Çekim İşlemi",
+        text: `Çekilecek tutar: ${amount} TL. Onaylıyor musunuz?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Onayla",
+        cancelButtonText: "İptal",
+      });
+
+      if (confirmAmount.isConfirmed) {
+        let timerInterval;
+        let timeLeft = 60;
+        // Çekim için SMS kodu giriş ekranı
+        const smsResult = await Swal.fire({
+          title: "SMS Onayı Gerekli",
+          html: `
+                <p>${amount} TL çekim işlemi yapıyorsunuz.</p>
+                <p>Lütfen SMS ile gönderilen kodu girin:</p>
+                <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
+                <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
+              `,
+          showCancelButton: true,
+          confirmButtonText: "Onayla",
+          cancelButtonText: "İptal et",
+          didOpen: () => {
+            const timerElement =
+              Swal.getHtmlContainer().querySelector("#timer");
+            timerInterval = setInterval(() => {
+              timeLeft -= 1;
+              timerElement.textContent = timeLeft;
+
+              if (timeLeft === 0) {
+                clearInterval(timerInterval);
+                Swal.close();
+                Swal.fire(
+                  "Süre Doldu",
+                  "İşlem süresi dolduğu için iptal edildi.",
+                  "error"
+                );
+              }
+            }, 1000);
+          },
+          willClose: () => {
+            clearInterval(timerInterval);
+          },
+          preConfirm: () => {
+            const inputCode =
+              Swal.getPopup().querySelector("#smsCodeInput").value;
+            if (!inputCode) {
+              Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
+            }
+            return inputCode;
+          },
+        });
+
+        if (smsResult.isConfirmed) {
+          const smsCode = smsResult.value;
+          if (smsCode === smsWithdrawCode) {
+            // PARA ÇEKME APİSİ GELECEK ALAN
+            await Swal.fire({
+              title: "Başarılı!",
+              text: "Çekim talebiniz oluşturuldu.",
+              icon: "success",
+            });
+          } else {
+            await Swal.fire({
+              title: "Hata!",
+              text: "Geçersiz SMS kodu.",
+              icon: "error",
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Çekim işlemi sırasında hata oluştu:", error);
+      await Swal.fire({
+        title: "Hata!",
+        text: "Çekim işlemi başarısız oldu.",
+        icon: "error",
+      });
+    }
   };
 
   //günlük yapılan işlem saysını kontrol ediyoruz kontrol ediyoruz
@@ -176,10 +352,13 @@ export default function Amount({
           <RiArrowLeftWideLine className="text-purple-800" size={24} />
         </button>
         <div>
-          <h4 className="text-purple-600 font-medium uppercase">{showSelectedAction === "deposit" ? "Para Yatır" : "Para Çek"}</h4>
+          <h4 className="text-purple-600 font-medium uppercase">
+            {showSelectedAction === "deposit" ? "Para Yatır" : "Para Çek"}
+          </h4>
           <h3 className="text-2xl font-semibold text-purple-900">
-            
-            {showSelectedAction === "deposit" ? "Banka Hesabından Cüzdanına Para Yükle" : "Cüzdanından Banka Hesabına Para Çek"}
+            {showSelectedAction === "deposit"
+              ? "Banka Hesabından Cüzdanına Para Yükle"
+              : "Cüzdanından Banka Hesabına Para Çek"}
           </h3>
         </div>
       </div>
@@ -222,7 +401,7 @@ export default function Amount({
               if (showSelectedAction === "deposit") {
                 addBalance(amount); // Bakiye yükleme işlemi
               } else if (showSelectedAction === "withdraw") {
-                console.log("Çekim talebi oluştur.");
+                getWithdraw(amount);
               }
             }}
             className="p-1 px-3 rounded-lg bg-purple-700 text-white"
