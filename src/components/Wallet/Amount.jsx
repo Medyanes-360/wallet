@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { RiArrowRightWideLine, RiArrowLeftWideLine } from "react-icons/ri";
+import { postAPI } from "../../services/fetchAPI";
 
 export default function Amount({
   amount,
@@ -14,7 +15,7 @@ export default function Amount({
   const [riskAmount, setRiskAmount] = useState(2000); // Onay gerektiren para miktarı
   const [smsCode, setSmsCode] = useState(""); // Kullanıcının girdiği SMS kodu
   const generatedCode = "123456"; // SMS ile gönderilecek örnek kod
-  const [processAmount, setProcessAmount] = useState(4); // giriş yapmış kullanıcıdan alacağımız o gün yaptığı işlem sayısı
+  const [processAmount, setProcessAmount] = useState(2); // giriş yapmış kullanıcıdan alacağımız o gün yaptığı işlem sayısı
 
   const [smsWithdrawCode, setSmsWithdrawCode] = useState("123456"); // para çekimi için gelen kod
 
@@ -34,21 +35,23 @@ export default function Amount({
   };
   // Bakiye ekleme fonksiyonu
   const addBalance = async (amount) => {
-    const addBalance = async (amount) => {
-      await postAPI("/payment", {
-        userId: "66fb0e6ef23da7a2919e1b44",
-        amount,
-        transactionId: "66fb0e6ff23da7a2919e1b48",
-        isPaymentVerified: false,
-      }).then((res) => {
-        if(res.status === 200 || res.status === "success") {
-          console.log(res.message)
+    await postAPI("/payment", {
+      userId: "66fb0e6ef23da7a2919e1b44",
+      amount,
+      transactionId: "66fb0e6ff23da7a2919e1b48",
+      isPaymentVerified: true,
+    })
+      .then((res) => {
+        if (res.status === 200 || res.status === "success") {
+          console.log(res.transactions[0]);
         } else {
-          console.log(res.message)
+          console.log(res.message);
         }
-      }).catch((res) => {
-        console.log(res.message)
       })
+      .catch((res) => {
+        console.log(res.message);
+      });
+
     if (amount) {
       const processStatus = await checkProcessAmount(); // Günlük işlem sayısını kontrol et
       if (processStatus) {
@@ -431,4 +434,4 @@ export default function Amount({
       </div>
     </div>
   );
-}}
+}
