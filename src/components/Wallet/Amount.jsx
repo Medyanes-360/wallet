@@ -34,6 +34,21 @@ export default function Amount({
   };
   // Bakiye ekleme fonksiyonu
   const addBalance = async (amount) => {
+    const addBalance = async (amount) => {
+      await postAPI("/payment", {
+        userId: "66fb0e6ef23da7a2919e1b44",
+        amount,
+        transactionId: "66fb0e6ff23da7a2919e1b48",
+        isPaymentVerified: false,
+      }).then((res) => {
+        if(res.status === 200 || res.status === "success") {
+          console.log(res.message)
+        } else {
+          console.log(res.message)
+        }
+      }).catch((res) => {
+        console.log(res.message)
+      })
     if (amount) {
       const processStatus = await checkProcessAmount(); // Günlük işlem sayısını kontrol et
       if (processStatus) {
@@ -416,4 +431,4 @@ export default function Amount({
       </div>
     </div>
   );
-}
+}}
