@@ -20,6 +20,8 @@ model User {
   isBlocked   Boolean   @default(false) // To block suspicious accounts
   role        UserRole  @default(USER) // User role (USER, ADMIN, etc.)
 
+  dailyPaymentLimit Int @default(5)
+
   wallet   Wallet? @relation(fields: [walletId], references: [id])
   walletId String? @unique @db.ObjectId
 

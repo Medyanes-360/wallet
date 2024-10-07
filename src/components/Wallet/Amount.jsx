@@ -12,6 +12,8 @@ export default function Amount({
   setIfSavedCardUsed,
   ifSavedCardUsed,
 }) {
+  const [maxAmount, setMaxAmount] = useState(10_000);
+  const [minAmount, setMinAmount] = useState(20);
   const [riskAmount, setRiskAmount] = useState(2000); // Onay gerektiren para miktarı
   const [smsCode, setSmsCode] = useState(""); // Kullanıcının girdiği SMS kodu
   const generatedCode = "123456"; // SMS ile gönderilecek örnek kod
@@ -24,7 +26,8 @@ export default function Amount({
 
     // Düzenli ifade ile sadece rakamları kabul et
     if (/^[0-9]*$/.test(value)) {
-      setAmount(value); // Eğer girdi sadece sayı ise değeri güncelle
+      // setAmount(value); // Eğer girdi sadece sayı ise değeri güncelle
+      setAmount(parseFloat(value)); // Eğer girdi sadece sayı ise değeri güncelle
     }
   };
   const handleKeyDown = (event) => {
@@ -35,28 +38,28 @@ export default function Amount({
   };
   // Bakiye ekleme fonksiyonu
   const addBalance = async (amount) => {
-    await postAPI("/payment", {
-      userId: "66fb0e6ef23da7a2919e1b44",
-      amount,
-      transactionId: "66fb0e6ff23da7a2919e1b48",
-      isPaymentVerified: true,
-    })
-      .then((res) => {
-        if (res.status === 200 || res.status === "success") {
-          console.log(res.transactions[0]);
-        } else {
-          console.log(res.message);
-        }
-      })
-      .catch((res) => {
-        console.log(res.message);
-      });
-
     if (amount) {
       const processStatus = await checkProcessAmount(); // Günlük işlem sayısını kontrol et
       if (processStatus) {
         const riskStatus = await checkRiskAmount(amount); // Miktarı kontrol et
-        console.log(riskStatus);
+        const riskMinAmountStatus = await checkMinAmount(amount);
+        if (riskStatus && riskMinAmountStatus) {
+          await postAPI("/payment", {
+            userId: "66fb0e6ef23da7a2919e1b44",
+            amount,
+            transactionId: "66fb0e6ff23da7a2919e1b48",
+          })
+            .then((res) => {
+              if (res.status === 200 || res.status === "success") {
+                console.log(res.data);
+              } else {
+                console.log(res.message);
+              }
+            })
+            .catch((res) => {
+              console.log(res.message);
+            });
+        }
       }
     }
   };
@@ -271,91 +274,146 @@ export default function Amount({
 
   //miktarın risk miktarından fazla olup olmadığını kontrol ediyoruz
   const checkRiskAmount = async (amount) => {
-    if (amount > riskAmount) {
-      const result = await Swal.fire({
-        title: "Miktarı Onaylıyor musunuz?",
-        text: `Bu işlem ${amount} TL'lik bir yükleme. Devam etmek istiyor musunuz?`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Evet",
-        cancelButtonText: "Hayır",
-      });
+    if (amount <= maxAmount) {
+      if (amount > riskAmount) {
+        const result = await Swal.fire({
+          title: "Miktarı Onaylıyor musunuz?",
+          text: `Bu işlem ${amount} TL'lik bir yükleme. Devam etmek istiyor musunuz?`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Evet",
+          cancelButtonText: "Hayır",
+        });
 
-      if (result.isConfirmed) {
-        sendSms();
+        if (result.isConfirmed) {
+          const sendSMSCode = await postAPI("/sms/send-code", {
+            userId: "66fb0e6ef23da7a2919e1b44",
+            amount,
+            paymentType: "payment",
+          })
+            .then((res) => {
+              if (res.status === 200 || res.status === "success") {
+                console.log("verificationCode: ", res.message.verificationCode);
+                return res.message.verificationCode;
+              } else {
+                console.log(res.message);
+              }
+            })
+            .catch((res) => {
+              console.log(res.message);
+            });
 
-        let timerInterval;
-        let timeLeft = 60; // 60 saniye (1 dakika)
+          let timerInterval;
+          let timeLeft = 60; // 60 saniye (1 dakika)
 
-        const smsResult = await Swal.fire({
-          title: "SMS Onayı Gerekli",
-          html: `
+          const smsResult = await Swal.fire({
+            title: "SMS Onayı Gerekli",
+            html: `
             <p>${riskAmount} TL'nin üzerinde bir işlem yapıyorsunuz.</p>
             <p>Lütfen SMS ile gönderilen kodu girin:</p>
             <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
             <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
           `,
-          showCancelButton: true,
-          confirmButtonText: "Onayla",
-          cancelButtonText: "İptal et",
-          didOpen: () => {
-            const timerElement =
-              Swal.getHtmlContainer().querySelector("#timer");
-            timerInterval = setInterval(() => {
-              timeLeft -= 1;
-              timerElement.textContent = timeLeft;
+            showCancelButton: true,
+            confirmButtonText: "Onayla",
+            cancelButtonText: "İptal et",
+            didOpen: () => {
+              const timerElement =
+                Swal.getHtmlContainer().querySelector("#timer");
+              timerInterval = setInterval(() => {
+                timeLeft -= 1;
+                timerElement.textContent = timeLeft;
 
-              if (timeLeft === 0) {
-                clearInterval(timerInterval);
-                Swal.close();
-                Swal.fire(
-                  "Süre Doldu",
-                  "İşlem süresi dolduğu için iptal edildi.",
-                  "error"
-                );
+                if (timeLeft === 0) {
+                  clearInterval(timerInterval);
+                  Swal.close();
+                  Swal.fire(
+                    "Süre Doldu",
+                    "İşlem süresi dolduğu için iptal edildi.",
+                    "error"
+                  );
+                }
+              }, 1000);
+            },
+            willClose: () => {
+              clearInterval(timerInterval); // Zamanlayıcı durduruluyor
+            },
+            preConfirm: () => {
+              const inputCode =
+                Swal.getPopup().querySelector("#smsCodeInput").value;
+              if (!inputCode) {
+                Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
               }
-            }, 1000);
-          },
-          willClose: () => {
-            clearInterval(timerInterval); // Zamanlayıcı durduruluyor
-          },
-          preConfirm: () => {
-            const inputCode =
-              Swal.getPopup().querySelector("#smsCodeInput").value;
-            if (!inputCode) {
-              Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
-            }
-            return inputCode;
-          },
-        });
+              return inputCode;
+            },
+          });
 
-        if (smsResult.isConfirmed) {
-          if (smsResult.value === generatedCode) {
-            Swal.fire(
-              "Onaylandı!",
-              "İşleminiz başarıyla tamamlandı.",
-              "success"
-            );
-            console.log("İşlem başarıyla onaylandı.");
-            return true;
-          } else {
-            Swal.fire("Hatalı Kod", "Girdiğiniz SMS kodu yanlış.", "error");
-            return false;
+          if (smsResult.isConfirmed) {
+            const verificationOfSmsCode = await postAPI("/sms/verify-code", {
+              verificationCode: sendSMSCode,
+              userInput: smsResult.value,
+            })
+              .then((res) => {
+                if (res.status === 200 || res.status === "success") {
+                  console.log(res.message);
+                  return res.isVerified;
+                } else {
+                  console.log(res.message);
+                }
+              })
+              .catch((res) => {
+                console.log(res.message);
+              });
+            if (verificationOfSmsCode) {
+              Swal.fire(
+                "Onaylandı!",
+                "İşleminiz başarıyla tamamlandı.",
+                "success"
+              );
+              console.log("İşlem başarıyla onaylandı.");
+              return true;
+            } else {
+              Swal.fire("Hatalı Kod", "Girdiğiniz SMS kodu yanlış.", "error");
+              return false;
+            }
           }
+        } else {
+          Swal.fire(
+            "İşlem İptal Edildi",
+            "Yükleme işlemi iptal edildi.",
+            "error"
+          );
+          return false;
         }
       } else {
-        Swal.fire(
-          "İşlem İptal Edildi",
-          "Yükleme işlemi iptal edildi.",
-          "error"
-        );
-        return false;
+        console.log("İşlem risk seviyesinin altında, direkt yapılabilir.");
+        return true;
       }
     } else {
-      console.log("İşlem risk seviyesinin altında, direkt yapılabilir.");
+      await Swal.fire({
+        title: "Maksimum limit",
+        text: `Ödeme yapmak istediğiniz miktar ${amount}, sistem tarafından belirtilen maksimum limiti ${maxAmount} aşıyor.`,
+        icon: "warning",
+        confirmButtonText: "Tamam",
+      });
+      return false;
+    }
+  };
+
+  const checkMinAmount = async (amount) => {
+    if (amount < minAmount) {
+      await Swal.fire({
+        title: "Minimum limit",
+        text: `Ödeme yapmak istediğiniz miktar ${amount}, sistem tarafından belirtilen minimum limitin ${minAmount} altında.`,
+        icon: "warning",
+        confirmButtonText: "Tamam",
+      });
+      return false;
+    } else {
       return true;
     }
   };
+
   return (
     <div className="">
       <div className="flex gap-x-3">
