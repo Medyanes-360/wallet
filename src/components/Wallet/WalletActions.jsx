@@ -1,19 +1,57 @@
 "use client";
-import { RiArrowRightWideLine } from "react-icons/ri";
 import { GrTransaction } from "react-icons/gr";
 import { useState } from "react";
 import CardMain from "./CardMain";
 
 import ActionStep from "./ActionStep";
 import Amount from "./Amount";
+import TransactionItem from "./TransactionItem";
 
-export default function WalletActions() {
+export default function WalletActions({setPage}) {
   const [showSelectedAction, setShowSelecetedAction] = useState(""); //deposit/withdraw
   const [amount, setAmount] = useState("");
   const [ifSavedCardUsed, setIfSavedCardUsed] = useState(false);
 
   const [actionStep, setActionStep] = useState(0); // işlem basamağı
 
+  const testTransactions = [
+    {
+      title: "Harcama",
+      subtitle: "subtitle",
+      date: "10 Eylül",
+      amount: "-500.00",
+    },
+    {
+      title: "Yükleme",
+      subtitle: "subtitl2e",
+      date: "10 2Eylül",
+      amount: "+2000.00",
+    },
+    {
+      title: "Çekme",
+      subtitle: "subtitle3",
+      date: "10 Eylül3",
+      amount: "-3000.00",
+    },
+    {
+      title: "Harcama",
+      subtitle: "subtitle",
+      date: "10 Ekim",
+      amount: "-620.00",
+    },
+    {
+      title: "Yükleme",
+      subtitle: "subtitl2e",
+      date: "10 Ağustos",
+      amount: "+5000.00",
+    },
+    {
+      title: "Çekme",
+      subtitle: "subtitle3",
+      date: "10 Aralık",
+      amount: "-1000.00",
+    },
+  ];
   const Balance = () => {
     return (
       <div className="text-center">
@@ -78,66 +116,22 @@ export default function WalletActions() {
       <div className="mt-10 mx-auto max-w-xl ">
         <div className="flex justify-between">
           <h3 className="font-semibold text-lg text-black">Son İşlemlerim</h3>
-          <a className="underline decoration-1 text-purple-900" href="">
+          <button onClick={()=>setPage("transactions")} className="underline decoration-1 text-purple-900">
             Tümü
-          </a>
+          </button>
         </div>
         <ul className="mt-4 shadow border rounded-lg divide-y">
-          <li className="">
-            <button className="w-full flex p-4  justify-between items-center text-sm ">
-              <span className="flex justify-center items-center gap-x-5">
-                <span>icon</span>
-                <span className="flex flex-col gap-y-3">
-                  <span className="font-medium">Bakiye Yüklendi </span>
-                  <span className="text-xm">Bakiye Yüklendi </span>
-                </span>
-              </span>
-              <span className="flex justify-center items-center gap-x-5">
-                <span className="flex flex-col gap-y-1">
-                  <span className="text-green-600 font-medium">+800,00 TL</span>
-                  <div className="">10 Eylül</div>
-                </span>
-                <span className="p-1">
-                  <RiArrowRightWideLine size={24} />
-                </span>
-              </span>
-            </button>
-          </li>
-          <li className="">
-            <button className="w-full flex p-4  justify-between items-center text-sm">
-              <span className="font-medium">Hizmet satın alındı </span>
-              <span className="flex justify-center items-center gap-x-5">
-                <span className="flex flex-col gap-y-1">
-                  <span className="text-red-600 font-medium">-100,00 TL</span>
-                  <div className="">19 Ekim</div>
-                </span>
-                <span className="p-1">
-                  <RiArrowRightWideLine size={24} />
-                </span>
-              </span>
-            </button>
-          </li>
-          <li className="">
-            <button className="w-full flex p-4  justify-between items-center text-sm">
-              <span className="font-medium">Hizmet satın alındı </span>
-              <span className="flex justify-center items-center gap-x-5">
-                <span className="flex flex-col gap-y-1">
-                  <span className="text-red-600 font-medium">-800,00 TL</span>
-                  <div className="">1 Eylül</div>
-                </span>
-                <span className="p-1">
-                  <RiArrowRightWideLine size={24} />
-                </span>
-              </span>
-            </button>
-          </li>
+          {/** aşağıdaki slice işlemi son 4 işlemi alıyor eğer 4<= ise hepsini yazıyor */}
+          {testTransactions.slice(-4).map((item,index) => (
+            <TransactionItem key={`${index}-${item.title}`} transactionData={item} />
+          ))}
         </ul>
       </div>
     );
   };
 
   return (
-    <div className="md:p-6 py-5 px-2  bg-white rounded-lg md:shadow-md">
+    <div className="md:p-6 md:pb-10 py-5 px-2  bg-white rounded-lg md:shadow-md">
       {actionStep === 0 ? (
         <div>
           <Balance />

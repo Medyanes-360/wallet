@@ -5,15 +5,13 @@ export default function TransactionItem({ transactionData }) {
     <li className="">
       <button className="w-full flex p-4  justify-between items-center text-sm ">
         <span className="flex justify-center items-center gap-x-4">
-          <span className="border rounded-full h-10 w-10">
-            {/** seçili ikonlardan uygun olanı otomatik olarak seç */}
-            icon
-          </span>
+          {/** şimdilik askıya alındı  -- seçili ikonlardan uygun olanı otomatik olarak seç */}
+          {/* <span className="border rounded-full h-10 w-10 flex justify-center items-center text-green-600"></span> */}
           <span className="flex flex-col gap-y-3">
-            <span className="font-medium">
+            <span className="font-medium text-left">
               {transactionData ? transactionData.title : "Title"}
-            </span>
-            <span className="text-xm">
+            </span> 
+            <span className="text-xm text-left">
               {transactionData ? transactionData.subtitle : "Subtitle"}
             </span>
           </span>

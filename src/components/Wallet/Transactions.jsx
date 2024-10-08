@@ -1,5 +1,6 @@
 "use client";
 import { IoIosSearch, IoMdOptions } from "react-icons/io";
+
 import { useState } from "react";
 import Tabs from "./Tabs";
 import TransactionItem from "./TransactionItem";
@@ -11,23 +12,41 @@ export default function Transactions() {
       title: "Harcama",
       subtitle: "subtitle",
       date: "10 Eylül",
-      amount: "-100",
+      amount: "-500.00",
     },
     {
       title: "Yükleme",
       subtitle: "subtitl2e",
       date: "10 2Eylül",
-      amount: "+1000.00",
+      amount: "+2000.00",
     },
     {
       title: "Çekme",
       subtitle: "subtitle3",
       date: "10 Eylül3",
-      amount: "-10000.00",
+      amount: "-3000.00",
+    },
+    {
+      title: "Harcama",
+      subtitle: "subtitle",
+      date: "10 Ekim",
+      amount: "-620.00",
+    },
+    {
+      title: "Yükleme",
+      subtitle: "subtitl2e",
+      date: "10 Ağustos",
+      amount: "+5000.00",
+    },
+    {
+      title: "Çekme",
+      subtitle: "subtitle3",
+      date: "10 Aralık",
+      amount: "-1000.00",
     },
   ];
   return (
-    <div className="md:mx-10">
+    <div className="lg:mx-10 ">
       <div className="md:p-6 p-2 flex flex-col gap-y-10">
         <div className="flex flex-col gap-y-3 md:flex-row justify-between items-center">
           <h2 className="text-2xl font-medium text-purple-900">İşlemlerim</h2>
@@ -47,10 +66,10 @@ export default function Transactions() {
         </div>
         <Tabs />
 
-        <div className="flex justify-center items-center  ">
+        <div className="flex justify-center items-center ">
           <ul className="mt-4 w-full max-w-xl  shadow border rounded-lg divide-y bg-white">
-            {testTransactions.map((item) => (
-              <TransactionItem key={item.title} transactionData={item} />
+            {testTransactions.map((item,index) => (
+              <TransactionItem key={`${index}-${item.title}`} transactionData={item} />
             ))}
           </ul>
         </div>
