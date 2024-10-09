@@ -41,23 +41,23 @@ const handle = async (req, res) => {
       }
 
       // check the user ip in db
-      const checkUserIp = await getUniqueData("IpWhitelist", {
-        userId,
-        ipAddress: userIp,
-      });
-      if (!checkUserIp) {
-        await logPaymentAttempt(
-          userId,
-          amount,
-          transactionId,
-          "FAILURE",
-          "User IP not found"
-        );
-        return res.status(404).json({
-          status: "error",
-          message: "User IP not found",
-        });
-      }
+      // const checkUserIp = await getUniqueData("IpWhitelist", {
+      //   userId,
+      //   ipAddress: userIp,
+      // });
+      // if (!checkUserIp) {
+      //   await logPaymentAttempt(
+      //     userId,
+      //     amount,
+      //     transactionId,
+      //     "FAILURE",
+      //     "User IP not found"
+      //   );
+      //   return res.status(404).json({
+      //     status: "error",
+      //     message: "User IP not found",
+      //   });
+      // }
 
       //? If I need to add user role check, then it should return an error in case of user being an Admin?
       // check the user role
