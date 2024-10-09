@@ -41,35 +41,36 @@ export default function WalletNavigation({ type = "desktop", page, setPage }) {
         </div>
       </div>
     );
-  }
-  return (
-    <div className="min-h-full flex flex-col justify-between bg-white">
-      <div>
-        <div className="border-b p-4 mb-5">
-          <h3 className="text-lg font-medium text-purple-800">Cüzdanım</h3>
-        </div>
+  } else {
+    return (
+      <div className="min-h-full flex flex-col justify-between bg-white">
         <div>
-          {navigationItems.map((item) => (
-            <NavigationItem
-              id={item.id}
-              key={item.id}
-              page={page}
-              setPage={setPage}
-              title={item.title}
-              icon={item.icon}
-            />
-          ))}
+          <div className="border-b p-4 mb-5">
+            <h3 className="text-lg font-medium text-purple-800">Cüzdanım</h3>
+          </div>
+          <div>
+            {navigationItems.map((item) => (
+              <NavigationItem
+                id={item.id}
+                key={item.id}
+                page={page}
+                setPage={setPage}
+                title={item.title}
+                icon={item.icon}
+              />
+            ))}
+          </div>
         </div>
+        <button className="p-3 my-5 mx-2 rounded-lg shadow flex items-center gap-x-3">
+          <div className="p-2 px-3 rounded-lg bg-purple-100 text-purple-900 flex justify-center items-center">
+            <IoPersonOutline size={20} />
+          </div>
+          <div className="p-1 w-full text-left">Ramazan Ünal</div>
+          <div className="p-1 flex justify-center items-center">
+            <RiArrowDownSLine />
+          </div>
+        </button>
       </div>
-      <button className="p-3 my-5 mx-2 rounded-lg shadow flex items-center gap-x-3">
-        <div className="p-2 px-3 rounded-lg bg-purple-100 text-purple-900 flex justify-center items-center">
-          <IoPersonOutline size={20} />
-        </div>
-        <div className="p-1 w-full text-left">Ramazan Ünal</div>
-        <div className="p-1 flex justify-center items-center">
-          <RiArrowDownSLine />
-        </div>
-      </button>
-    </div>
-  );
+    );
+  }
 }

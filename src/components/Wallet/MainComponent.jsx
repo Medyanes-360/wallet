@@ -9,10 +9,15 @@ export default function MainComponent() {
   const [login, setLogin] = useState(false);
 
   // session varsa login true olur
-  if (sessionStorage.getItem("loginSession") === "true" && !login) {
-    console.log(sessionStorage.getItem("loginSession"));
-    setLogin(true);
-  }
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (window.sessionStorage.getItem("loginSession") === "true" && !login) {
+        console.log(window.sessionStorage.getItem("loginSession"));
+        setLogin(true);
+      }
+    }
+  });
 
   if (!login) {
     return <Signin setLogin={setLogin} />;

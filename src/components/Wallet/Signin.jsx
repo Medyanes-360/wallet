@@ -15,7 +15,7 @@ export default function Signin({ setLogin }) {
   console.log("şifre", "123456");
 
   function saveSession() {
-    sessionStorage.setItem("loginSession", true);
+    window.sessionStorage.setItem("loginSession", true);
     setLogin(true);
   }
   function handleFailedLogin() {
