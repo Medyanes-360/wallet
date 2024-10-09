@@ -1,4 +1,5 @@
 import { getUniqueData } from "../../../../services/serviceOperations";
+import logPaymentAttempt from "../../../../services/logPaymentAttempt";
 
 const handle = async (req, res) => {
   if (req.method === "POST") {
@@ -20,6 +21,7 @@ const handle = async (req, res) => {
           userId,
           amount,
           transactionId,
+          "FAILURE",
           "User not found"
         );
         return res

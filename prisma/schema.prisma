@@ -26,9 +26,9 @@ model User {
   walletId String? @unique @db.ObjectId
 
   bankAccounts BankAccount[] // Relation to bank accounts owned by the user
-
   transactions Transaction[] // Relation to transactions made by the user
   paymentLogs  PaymentLog[] // Relation to payment logs made by the user
+  ipWhitelist  IpWhitelist[] // Relation to IP whitelist entries
 }
 
 model Wallet {
@@ -38,13 +38,14 @@ model Wallet {
   currency  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // isInProcess Boolean  @default(false)
 
   User        User?
   Transaction Transaction[]
 }
 
 model Transaction {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(uuid()) @map("_id")
   walletId    String   @db.ObjectId
   userId      String?  @db.ObjectId
   type        String //Money deposit withdraw transfer
@@ -60,12 +61,13 @@ model Transaction {
 }
 
 model PaymentLog {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId
-  transactionId String?  @unique @db.ObjectId
-  amount        Float
-  timestamp     DateTime @default(now())
-  status        String
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   @db.ObjectId
+  transactionId     String?  @unique
+  amount            Float
+  timestamp         DateTime @default(now())
+  status            String
+  statusDescription String?
 
   User        User         @relation(fields: [userId], references: [id])
   Transaction Transaction? @relation(fields: [transactionId], references: [id])
@@ -80,7 +82,22 @@ model BankAccount {
   user User @relation(fields: [userId], references: [id])
 }
 
+model IpWhitelist {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?  @db.ObjectId
+  ipAddress String   @unique
+  addedAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
 enum UserRole {
   USER
   ADMIN
+}
+
+enum PaymentType {
+  PAYMENT
+  WITHDRAW
+  TRANSFER
 }

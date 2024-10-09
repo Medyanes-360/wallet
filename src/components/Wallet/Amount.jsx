@@ -3,6 +3,7 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import { RiArrowRightWideLine, RiArrowLeftWideLine } from "react-icons/ri";
 import { postAPI } from "../../services/fetchAPI";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Amount({
   amount,
@@ -44,10 +45,16 @@ export default function Amount({
         const riskStatus = await checkRiskAmount(amount); // Miktarı kontrol et
         const riskMinAmountStatus = await checkMinAmount(amount);
         if (riskStatus && riskMinAmountStatus) {
+          const transactionId = uuidv4();
+          const userIp = await getUserIP();
+          console.log(userIp)
+
           await postAPI("/payment", {
             userId: "66fb0e6ef23da7a2919e1b44",
+            userIp,
             amount,
-            transactionId: "66fb0e6ff23da7a2919e1b48",
+            transactionId,
+            description: "My new payment",
           })
             .then((res) => {
               if (res.status === 200 || res.status === "success") {

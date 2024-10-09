@@ -1,11 +1,18 @@
-const logPaymentAttempt = async (userId, amount, status, transactionId) => {
+const logPaymentAttempt = async (
+  userId,
+  amount,
+  transactionId,
+  status,
+  statusDescription
+) => {
   try {
     await prisma.paymentLog.create({
       data: {
         userId,
         amount,
-        status,
         transactionId,
+        status,
+        statusDescription,
       },
     });
   } catch (error) {

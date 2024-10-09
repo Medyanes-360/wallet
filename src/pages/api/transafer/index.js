@@ -1,4 +1,3 @@
-import prisma from "../../../../prisma";
 import logPaymentAttempt from "../../../services/logPaymentAttempt";
 import {
   createNewData,
@@ -7,47 +6,65 @@ import {
   updateDataByAny,
 } from "../../../services/serviceOperations";
 
-const MAX_AMOUNT = 10_000;
-const MIN_AMOUNT = 20;
-
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
-      const { userId, userIp, amount, transactionId, description } =
-        await req.body;
+      const {
+        senderUserId,
+        receiverUserId,
+        senderUserIp,
+        amount,
+        requiredAmount,
+        transactionId,
+        description,
+      } = await req.body;
 
       // check the received data
-      if (!userId || !amount || amount <= 0) {
+      if (
+        !senderUserId ||
+        !receiverUserId ||
+        !senderUserIp ||
+        !amount ||
+        amount <= 0
+      ) {
         return res.status(400).json({
           status: "error",
-          message: "Invalid userId or amount",
+          message: "Something went wrong",
         });
       }
 
-      // check the user data in db
-      const user = await getUniqueData("User", { id: userId });
+      const [senderUser, receiverUser] = await Promise.all([
+        getUniqueData("User", { id: senderUserId }),
+        getUniqueData("User", { id: receiverUserId }),
+      ]);
 
-      if (!user) {
+      if (!senderUser || !receiverUser) {
+        const missingUserId = !senderUser ? senderUserId : receiverUserId;
+        const missingUserMessage = !senderUser
+          ? "senderUser not found"
+          : "receiverUser not found";
         await logPaymentAttempt(
-          userId,
+          missingUserId,
           amount,
           transactionId,
           "FAILURE",
-          "User not found"
+          missingUserMessage
         );
-        return res
-          .status(404)
-          .json({ status: "error", message: "User not found" });
+
+        return res.status(404).json({
+          status: "error",
+          message: missingUserMessage,
+        });
       }
 
       // check the user ip in db
       const checkUserIp = await getUniqueData("IpWhitelist", {
-        userId,
-        ipAddress: userIp,
+        userId: senderUser.id,
+        ipAddress: senderUserIp,
       });
       if (!checkUserIp) {
         await logPaymentAttempt(
-          userId,
+          senderUser.id,
           amount,
           transactionId,
           "FAILURE",
@@ -59,11 +76,10 @@ const handle = async (req, res) => {
         });
       }
 
-      //? If I need to add user role check, then it should return an error in case of user being an Admin?
       // check the user role
-      if (user.role && user.role === "ADMIN") {
+      if (senderUser.role && senderUser.role === "ADMIN") {
         await logPaymentAttempt(
-          userId,
+          senderUser.id,
           amount,
           transactionId,
           "FAILURE",
@@ -75,18 +91,8 @@ const handle = async (req, res) => {
         });
       }
 
-      // Fetch payment attempts made by the user today
-      // const todayPayments = await getAllData("Transaction", {
-      //   userId: user.id,
-      //   type: "payment",
-      //   createdAt: {
-      //     gte: new Date(new Date().setHours(0, 0, 0, 0)), // Start of the day
-      //     lt: new Date(new Date().setHours(23, 59, 59, 999)), // End of the day
-      //   },
-      // });
-
       const todayPaymentLogs = await getAllData("PaymentLog", {
-        userId: user.id,
+        userId: senderUser.id,
         timestamp: {
           gte: new Date(new Date().setHours(0, 0, 0, 0)), // Start of the day
           lt: new Date(new Date().setHours(23, 59, 59, 999)), // End of the day
@@ -95,9 +101,9 @@ const handle = async (req, res) => {
 
       //? Çünkü max günlük işlem sayısında başarısız işlemleri de saymalıyız
       // Check daily payment limit
-      if (todayPaymentLogs.length >= user.dailyPaymentLimit) {
+      if (todayPaymentLogs.length >= senderUser.dailyPaymentLimit) {
         await logPaymentAttempt(
-          userId,
+          senderUser.id,
           amount,
           transactionId,
           "FAILURE",
@@ -109,50 +115,46 @@ const handle = async (req, res) => {
         });
       }
 
+      //? SHOULD I ADD CONDITION FOR EXCEEDED MONEY?
       // Check maximum allowed payment amount
-      if (amount > MAX_AMOUNT) {
+      if (amount < requiredAmount) {
         await logPaymentAttempt(
-          userId,
+          senderUser.id,
           amount,
           transactionId,
           "FAILURE",
-          `Maximum transaction amount exceeded (Limit: ${MAX_AMOUNT} TL)`
+          `The transaction amount is less than the required (${requiredAmount} TL).`
         );
         return res.status(403).json({
           status: "error",
-          message: `Maximum transaction amount exceeded (Limit: ${MAX_AMOUNT} TL)`,
-        });
-      }
-
-      // Check minimum allowed payment amount
-      if (amount < MIN_AMOUNT) {
-        await logPaymentAttempt(
-          userId,
-          amount,
-          transactionId,
-          "FAILURE",
-          `Minimum transaction amount (Minimum: ${MIN_AMOUNT} TL)`
-        );
-        return res.status(403).json({
-          status: "error",
-          message: `Minimum transaction amount (Minimum: ${MAX_AMOUNT} TL)`,
+          message: `The transaction amount is less than the required (${requiredAmount} TL).`,
         });
       }
 
       // Find the relevant wallet
-      const wallet = await getUniqueData("Wallet", { userId });
+      const [senderUserWallet, receiverUserWallet] = await Promise.all([
+        getUniqueData("Wallet", { userId: senderUserId }),
+        getUniqueData("Wallet", { userId: receiverUserId }),
+      ]);
 
-      if (!wallet) {
+      if (!senderUserWallet || !receiverUserWallet) {
+        const missingUserId = !senderUserWallet
+          ? senderUser.id
+          : receiverUser.id;
+        const missingUserMessage = !senderUserWallet
+          ? "senderUserWallet not found"
+          : "receiverUserWallet not found";
         await logPaymentAttempt(
-          userId,
+          missingUserId,
           amount,
           transactionId,
           "FAILURE",
-          `Wallet not found for the user`
+          missingUserMessage
         );
+
         return res.status(404).json({
           status: "error",
-          message: "Wallet not found for the user",
+          message: missingUserMessage,
         });
       }
 
@@ -161,48 +163,55 @@ const handle = async (req, res) => {
         // Record the transaction
         const newTransaction = await createNewData("Transaction", {
           id: transactionId,
-          userId,
-          walletId: wallet.id,
-          type: "payment",
+          userId: receiverUserId,
+          walletId: receiverUserWallet.id,
+          type: "transfer",
           amount,
           status: "PENDING",
-          description: description || "Payment transaction",
+          description: description || "Transfer transaction",
         });
 
-        // Update the wallet balance safely
-        const updatedWallet = await updateDataByAny(
-          "Wallet",
-          { id: wallet.id },
-          {
-            balance: {
-              increment: amount, // Use Prisma's increment to avoid race conditions
-            },
-          }
-        );
+        // Update the wallets balance safely
+        const [updatedSenderWallet, updatedReceiverWallet] = await Promise.all([
+          updateDataByAny(
+            "Wallet",
+            { id: senderUserWallet.id },
+            { balance: { decrement: amount } }
+          ),
+          updateDataByAny(
+            "Wallet",
+            { id: receiverUserWallet.id },
+            { balance: { increment: amount } }
+          ),
+        ]);
 
         // If everything is alright, make a log of the payment
         await logPaymentAttempt(
-          userId,
+          receiverUser.id,
           amount,
           newTransaction.id,
           "SUCCESS",
-          "Making a request for payment"
+          `Money transfer to ${receiverUser.fullname} succeeded`
         );
 
-        return { newTransaction, updatedWallet };
+        return { newTransaction, updatedSenderWallet, updatedReceiverWallet };
       });
 
       return res.status(200).json({
         status: "success",
-        message: `API request succeeded`,
+        message: "API request succeeded",
         data: result,
       });
     } catch (error) {
       return res.status(500).json({
         status: "error",
-        message: `API CATCH ERROR: ${error.message}`,
+        message: error,
       });
     }
+  } else {
+    return res
+      .status(405)
+      .json({ status: "error", message: "Method Not Allowed" });
   }
 };
 
