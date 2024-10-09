@@ -297,85 +297,124 @@ export default function Amount({
                 return res.message.verificationCode;
               } else {
                 console.log(res.message);
+                return null;
               }
             })
-            .catch((res) => {
-              console.log(res.message);
+            .catch((error) => {
+              console.log(error.message);
+              return null;
             });
 
-          let timerInterval;
-          let timeLeft = 60; // 60 saniye (1 dakika)
+          if (!sendSMSCode) {
+            Swal.fire("Hata", "SMS kodu gönderilemedi.", "error");
+            return false;
+          }
 
-          const smsResult = await Swal.fire({
-            title: "SMS Onayı Gerekli",
-            html: `
-            <p>${riskAmount} TL'nin üzerinde bir işlem yapıyorsunuz.</p>
-            <p>Lütfen SMS ile gönderilen kodu girin:</p>
-            <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
-            <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
-          `,
-            showCancelButton: true,
-            confirmButtonText: "Onayla",
-            cancelButtonText: "İptal et",
-            didOpen: () => {
-              const timerElement =
-                Swal.getHtmlContainer().querySelector("#timer");
-              timerInterval = setInterval(() => {
-                timeLeft -= 1;
-                timerElement.textContent = timeLeft;
+          let attempts = 3;
+          let isVerified = false;
 
-                if (timeLeft === 0) {
-                  clearInterval(timerInterval);
-                  Swal.close();
-                  Swal.fire(
-                    "Süre Doldu",
-                    "İşlem süresi dolduğu için iptal edildi.",
-                    "error"
-                  );
+          while (attempts > 0 && !isVerified) {
+            let timerInterval;
+            let timeLeft = 60;
+
+            const smsResult = await Swal.fire({
+              title: "SMS Onayı Gerekli",
+              html: `
+                <p>${riskAmount} TL'nin üzerinde bir işlem yapıyorsunuz.</p>
+                <p>Lütfen SMS ile gönderilen kodu girin:</p>
+                <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
+                <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
+              `,
+              showCancelButton: true,
+              confirmButtonText: "Onayla",
+              cancelButtonText: "İptal et",
+              didOpen: () => {
+                const timerElement =
+                  Swal.getHtmlContainer().querySelector("#timer");
+                timerInterval = setInterval(() => {
+                  timeLeft -= 1;
+                  timerElement.textContent = timeLeft;
+
+                  if (timeLeft === 0) {
+                    clearInterval(timerInterval);
+                    Swal.close();
+                    Swal.fire(
+                      "Süre Doldu",
+                      "İşlem süresi dolduğu için iptal edildi.",
+                      "error"
+                    );
+                  }
+                }, 1000);
+              },
+              willClose: () => {
+                clearInterval(timerInterval);
+              },
+              preConfirm: () => {
+                const inputCode =
+                  Swal.getPopup().querySelector("#smsCodeInput").value;
+                if (!inputCode) {
+                  Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
                 }
-              }, 1000);
-            },
-            willClose: () => {
-              clearInterval(timerInterval); // Zamanlayıcı durduruluyor
-            },
-            preConfirm: () => {
-              const inputCode =
-                Swal.getPopup().querySelector("#smsCodeInput").value;
-              if (!inputCode) {
-                Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
-              }
-              return inputCode;
-            },
-          });
+                return inputCode;
+              },
+            });
 
-          if (smsResult.isConfirmed) {
-            const verificationOfSmsCode = await postAPI("/sms/verify-code", {
-              verificationCode: sendSMSCode,
-              userInput: smsResult.value,
-            })
-              .then((res) => {
-                if (res.status === 200 || res.status === "success") {
-                  console.log(res.message);
-                  return res.isVerified;
-                } else {
-                  console.log(res.message);
-                }
+            if (smsResult.isConfirmed) {
+              const verificationOfSmsCode = await postAPI("/sms/verify-code", {
+                verificationCode: sendSMSCode,
+                userInput: smsResult.value,
               })
-              .catch((res) => {
-                console.log(res.message);
-              });
-            if (verificationOfSmsCode) {
-              Swal.fire(
-                "Onaylandı!",
-                "İşleminiz başarıyla tamamlandı.",
-                "success"
-              );
-              console.log("İşlem başarıyla onaylandı.");
-              return true;
+                .then((res) => {
+                  if (res.status === 200 || res.status === "success") {
+                    console.log(res.message);
+                    return res.isVerified;
+                  } else {
+                    console.log(res.message);
+                    return false;
+                  }
+                })
+                .catch((error) => {
+                  console.log(error.message);
+                  return false;
+                });
+
+              if (verificationOfSmsCode) {
+                Swal.fire(
+                  "Onaylandı!",
+                  "İşleminiz başarıyla tamamlandı.",
+                  "success"
+                );
+                console.log("İşlem başarıyla onaylandı.");
+                isVerified = true;
+                return true;
+              } else {
+                attempts -= 1;
+                await Swal.fire({
+                  title: "Hatalı Kod",
+                  text: `Girdiğiniz SMS kodu yanlış. Kalan giriş hakkı: ${attempts}`,
+                  icon: "error",
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
+                await new Promise((resolve) => setTimeout(resolve, 10));
+              }
             } else {
-              Swal.fire("Hatalı Kod", "Girdiğiniz SMS kodu yanlış.", "error");
+              Swal.fire(
+                "İşlem İptal Edildi",
+                "Yükleme işlemi iptal edildi.",
+                "error"
+              );
               return false;
             }
+          }
+
+          if (!isVerified) {
+            Swal.fire(
+              "İşlem Başarısız",
+              "3 defa yanlış kod girildiği için işlem iptal edildi.",
+              "error"
+            );
+            return false;
           }
         } else {
           Swal.fire(
