@@ -1,10 +1,14 @@
 "use client";
 import { useEffect } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 const useActivityTracker = (inactivityDuration = 3600000) => {
   // Default: 1h
+  const {data: session} = useSession()
+  
   useEffect(() => {
+    if(!session) return 
+
     let timeout;
 
     const resetTimer = () => {
