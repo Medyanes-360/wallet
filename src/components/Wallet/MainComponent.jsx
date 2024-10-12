@@ -3,10 +3,12 @@ import Signin from "./Signin";
 import WalletMain from "./WalletMain";
 import WalletNavigation from "./WalletNavigation";
 import { useEffect, useState } from "react";
+import useActivityTracker from "../../hooks/useActivityTracker";
 
 export default function MainComponent() {
   const [page, setPage] = useState("wallet"); // wallet,transactions
   const [login, setLogin] = useState(false);
+  useActivityTracker();
 
   // session varsa login true olur
 

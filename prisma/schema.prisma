@@ -8,19 +8,22 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  email       String    @unique
-  password    String // Store hashed passwords
-  fullName    String
-  phoneNumber String?   @unique
-  dateOfBirth DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  isVerified  Boolean   @default(false) // For email verification
-  isBlocked   Boolean   @default(false) // To block suspicious accounts
-  role        UserRole  @default(USER) // User role (USER, ADMIN, etc.)
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  email            String    @unique
+  password         String // Store hashed passwords
+  fullName         String
+  phoneNumber      String?   @unique
+  dateOfBirth      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  isVerified       Boolean   @default(false) // For email verification
+  isBlocked        Boolean   @default(false) // To block suspicious accounts
+  role             UserRole  @default(USER) // User role (USER, ADMIN, etc.)
+  walletProcessing Boolean   @default(false) // wallet islemi giden kullaniciya diger kullanici katilmak isterse o zaman check (login api sinde kontrol olunsun) eger islem varsa error versin, aksi taktirde next yapalim
 
-  dailyPaymentLimit Int @default(5)
+  activeSession Boolean @default(false) // Track if user is signed in
+
+  dailyPaymentLimit Int @default(3)
 
   wallet   Wallet? @relation(fields: [walletId], references: [id])
   walletId String? @unique @db.ObjectId
@@ -28,7 +31,10 @@ model User {
   bankAccounts BankAccount[] // Relation to bank accounts owned by the user
   transactions Transaction[] // Relation to transactions made by the user
   paymentLogs  PaymentLog[] // Relation to payment logs made by the user
-  ipWhitelist  IpWhitelist[] // Relation to IP whitelist entries
+  ipList       IPlist[] // Relation to IP list entries
+
+  // ipWhitelist  IpWhitelist[] // Relation to IP whitelist entries
+  // IpDarklist   IpDarklist[] // Relation to IP darklist entries
 }
 
 model Wallet {
@@ -38,7 +44,6 @@ model Wallet {
   currency  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  // isInProcess Boolean  @default(false)
 
   User        User?
   Transaction Transaction[]
@@ -82,14 +87,33 @@ model BankAccount {
   user User @relation(fields: [userId], references: [id])
 }
 
-model IpWhitelist {
+model IPlist {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String?  @db.ObjectId
   ipAddress String   @unique
   addedAt   DateTime @default(now())
+  isBlocked Boolean  @default(false)
 
   user User? @relation(fields: [userId], references: [id])
 }
+
+// model IpWhitelist {
+//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//   userId    String?  @db.ObjectId
+//   ipAddress String   @unique
+//   addedAt   DateTime @default(now())
+
+//   user User? @relation(fields: [userId], references: [id])
+// }
+
+// model IpDarklist {
+//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//   userId    String?  @db.ObjectId
+//   ipAddress String   @unique
+//   addedAt   DateTime @default(now())
+
+//   user User? @relation(fields: [userId], references: [id])
+// }
 
 enum UserRole {
   USER

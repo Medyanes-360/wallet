@@ -1,7 +1,15 @@
 import nextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import prisma from "../../../../prisma";
 import DecryptPassword from "../../../lib/decryptPassword";
+import {
+  createNewData,
+  getUniqueData,
+  updateDataByAny,
+} from "../../../services/serviceOperations";
+import sendEmail from "../../../services/sendEmail";
+import { generateJwtToken } from "../../../services/generateJwtToken";
+import { getSession } from "next-auth";
+import { generateVerificationCode } from "../../../services/generateVerificationCode";
 
 const authOptions = {
   providers: [
@@ -14,18 +22,26 @@ const authOptions = {
 
       async authorize(credentials) {
         try {
-          const { email, password } = credentials;
+          const { email, password, ipAddress } = credentials;
 
           if (!email || !password) {
             throw new Error("Please enter your email and password");
           }
 
-          const findUser = await prisma.user.findUnique({
-            where: { email: email },
-          });
+          const findUser = await getUniqueData("User", { email });
 
           if (!findUser) {
             throw new Error("Invalid email or password");
+          }
+
+          // check whether isBlocked in ipList is true or false
+          const checkUserIp = await getUniqueData("IPlist", {
+            userId: findUser.id,
+            ipAddress: ipAddress,
+          });
+
+          if (checkUserIp.isBlocked) {
+            throw new Error("Invalid IP address");
           }
 
           const passwordDecrypt = await DecryptPassword(
@@ -66,6 +82,60 @@ const authOptions = {
         session.user = token.user;
       }
       return session;
+    },
+
+    async signIn({ user }) {
+      const findUser = await getUniqueData("User", { email: user.email });
+      if (findUser.activeSession) {
+        const verificationCode = generateVerificationCode();
+
+        // Send the verification code to the user's email
+        await sendEmail(
+          findUser.email,
+          "Ofistik: Your Verification Code",
+          `Your code is: ${verificationCode}`
+        );
+
+        const verificationOfSmsCode = await postAPI("/sms/verify-code", {
+          verificationCode: sendSMSCode,
+          userInput: smsResult.value,
+        })
+          .then((res) => {
+            if (res.status === 200 || res.status === "success") {
+              console.log(res.message);
+              // need to signout the user
+            } else {
+              console.log(res.message);
+              return false;
+            }
+          })
+          .catch((error) => {
+            console.log(error.message);
+            return false;
+          });
+
+        return {
+          error: "User is already signed in on another device.",
+        };
+      }
+
+      await updateDataByAny(
+        "User",
+        { id: findUser.id },
+        { activeSession: true }
+      );
+
+      return true;
+    },
+
+    async signOut({ token }) {
+      // Cleanup: Reset activeSession when the user signs out
+      await updateDataByAny(
+        "User",
+        { id: token.user.id },
+        { activeSession: false }
+      );
+      return true; // Allow sign out
     },
   },
 };

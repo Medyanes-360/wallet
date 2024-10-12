@@ -24,7 +24,7 @@ export default function Signin({ setLogin }) {
         title: "Hatalı Şifre!",
         text: "Çok fazla hatalı şifre girişi yaptınız, giriş sayfasına yönlendiriliyorsunuz.",
         icon: "error",
-        didClose: () => {          
+        didClose: () => {
           // burada kullanıcıyı giriş yapma sayfasına gönderelim
           route.push("/");
         },
@@ -82,8 +82,8 @@ export default function Signin({ setLogin }) {
 
   return (
     <div className="h-screen flex justify-center">
-      <div className="border shadow-md  md:rounded-lg md:h-[555px] w-full md:w-[530px] md:mt-16">
-        <div className="bg-gradient-to-r border-t md:rounded-t-lg from-gray-50 via-gray-50  to-purple-100 p-4">
+      <div className="border shadow-md md:rounded-lg md:h-[555px] w-full md:w-[530px] md:mt-16">
+        <div className="bg-gradient-to-r border-t md:rounded-t-lg from-gray-50 via-gray-50 to-purple-100 p-4">
           <span className="font-medium text-2xl ml-4">Cüzdan Girişi</span>
         </div>
         <div className="px-10 py-10">

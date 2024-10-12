@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-//! THE EMAIL CANNOT BE SENT. IT MIGHT BE BECAUSE OF EMAILS (SENDER/RECEIVER) HAVING SECURITY ISSUES
+// ! THE EMAIL CANNOT BE SENT. IT MIGHT BE BECAUSE OF EMAILS (SENDER/RECEIVER) HAVING SECURITY ISSUES
 
 const sendEmail = async (userEmail, subject, message) => {
   const transporter = nodemailer.createTransport({

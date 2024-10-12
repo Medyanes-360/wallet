@@ -13,9 +13,9 @@ export default function Amount({
   setIfSavedCardUsed,
   ifSavedCardUsed,
 }) {
-  const [maxAmount, setMaxAmount] = useState(10_000);
-  const [minAmount, setMinAmount] = useState(20);
-  const [riskAmount, setRiskAmount] = useState(2000); // Onay gerektiren para miktarı
+  const [maxAmount, setMaxAmount] = useState(50000);
+  const [minAmount, setMinAmount] = useState(250);
+  const [riskAmount, setRiskAmount] = useState(10000); // Onay gerektiren para miktarı
   const [smsCode, setSmsCode] = useState(""); // Kullanıcının girdiği SMS kodu
   const generatedCode = "123456"; // SMS ile gönderilecek örnek kod
   const [processAmount, setProcessAmount] = useState(2); // giriş yapmış kullanıcıdan alacağımız o gün yaptığı işlem sayısı
@@ -47,7 +47,9 @@ export default function Amount({
         if (riskStatus && riskMinAmountStatus) {
           const transactionId = uuidv4();
           const userIp = await getUserIP();
-          console.log(userIp)
+
+          // max limit 50.000
+          // sms kontrolu 10.000 ben baslasin
 
           await postAPI("/payment", {
             userId: "66fb0e6ef23da7a2919e1b44",
@@ -55,7 +57,7 @@ export default function Amount({
             amount,
             transactionId,
             description: "My new payment",
-          })
+          }) 
             .then((res) => {
               if (res.status === 200 || res.status === "success") {
                 console.log(res.data);
@@ -63,8 +65,8 @@ export default function Amount({
                 console.log(res.message);
               }
             })
-            .catch((res) => {
-              console.log(res.message);
+            .catch((error) => {
+              console.log(error.message);
             });
         }
       }
@@ -251,15 +253,15 @@ export default function Amount({
 
   //günlük yapılan işlem saysını kontrol ediyoruz kontrol ediyoruz
   const checkProcessAmount = async () => {
-    if (processAmount > 5) {
+    if (processAmount > 3) {
       await Swal.fire({
         title: "Uyarı",
-        text: "Bugün 5'ten fazla işlem yaptınız!",
+        text: "Bugün 3'ten fazla işlem yaptınız!",
         icon: "warning",
         confirmButtonText: "Tamam",
       });
       return false; // İşlem sayısı sınırını aştı, daha fazla işlem yapılamaz
-    } else if (processAmount === 4) {
+    } else if (processAmount === 3) {
       const result = await Swal.fire({
         title: "Son İşlem Uyarısı",
         text: "Bu, bugün yapabileceğiniz son işlem. Devam etmek istiyor musunuz?",

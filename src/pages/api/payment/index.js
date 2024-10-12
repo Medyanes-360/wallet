@@ -7,14 +7,13 @@ import {
   updateDataByAny,
 } from "../../../services/serviceOperations";
 
-const MAX_AMOUNT = 10_000;
-const MIN_AMOUNT = 20;
+const MAX_AMOUNT = 50000;
+const MIN_AMOUNT = 250;
 
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
-      const { userId, userIp, amount, transactionId, description } =
-        await req.body;
+      const { userId, amount, transactionId, description } = await req.body;
 
       // check the received data
       if (!userId || !amount || amount <= 0) {
@@ -39,25 +38,6 @@ const handle = async (req, res) => {
           .status(404)
           .json({ status: "error", message: "User not found" });
       }
-
-      // check the user ip in db
-      // const checkUserIp = await getUniqueData("IpWhitelist", {
-      //   userId,
-      //   ipAddress: userIp,
-      // });
-      // if (!checkUserIp) {
-      //   await logPaymentAttempt(
-      //     userId,
-      //     amount,
-      //     transactionId,
-      //     "FAILURE",
-      //     "User IP not found"
-      //   );
-      //   return res.status(404).json({
-      //     status: "error",
-      //     message: "User IP not found",
-      //   });
-      // }
 
       //? If I need to add user role check, then it should return an error in case of user being an Admin?
       // check the user role
@@ -158,6 +138,11 @@ const handle = async (req, res) => {
 
       // Perform the transaction atomically to avoid partial updates
       const result = await prisma.$transaction(async () => {
+        await updateDataByAny(
+          "User",
+          { id: user.id },
+          { walletProcessing: true }
+        );
         // Record the transaction
         const newTransaction = await createNewData("Transaction", {
           id: transactionId,
@@ -189,12 +174,18 @@ const handle = async (req, res) => {
           "Making a request for payment"
         );
 
+        await updateDataByAny(
+          "User",
+          { id: user.id },
+          { walletProcessing: false }
+        );
+
         return { newTransaction, updatedWallet };
       });
 
       return res.status(200).json({
         status: "success",
-        message: `API request succeeded`,
+        message: "API request succeeded",
         data: result,
       });
     } catch (error) {

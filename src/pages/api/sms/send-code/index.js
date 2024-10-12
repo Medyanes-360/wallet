@@ -1,5 +1,6 @@
 import { getUniqueData } from "../../../../services/serviceOperations";
 import logPaymentAttempt from "../../../../services/logPaymentAttempt";
+import { generateVerificationCode } from "../../../../services/generateVerificationCode";
 
 const handle = async (req, res) => {
   if (req.method === "POST") {
@@ -30,9 +31,7 @@ const handle = async (req, res) => {
       }
 
       const sendSMS = () => {
-        const verificationCode = Math.floor(
-          100000 + Math.random() * 900000
-        ).toString();
+        const verificationCode = generateVerificationCode().toString();
         const body = `Your verification code for ${paymentType} for the amount of ${amount} is: ${verificationCode}`;
 
         return {
