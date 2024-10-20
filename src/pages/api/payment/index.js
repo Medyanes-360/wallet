@@ -7,12 +7,20 @@ import {
   updateDataByAny,
 } from "../../../services/serviceOperations";
 
+const SUCCESS = "SUCCESS"
+const PENDING = "PENDING"
+const FAILURE = "FAILURE"
+
 const MAX_AMOUNT = 50000;
 const MIN_AMOUNT = 250;
 
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
+      // userId: to check whether the user exists or not
+      // amount: to log the amount of money and make the process
+      // transactionId: to idenify the payment process
+      // description: is not necessary, but if a user desires, they can leave a description for the paypment
       const { userId, amount, transactionId, description } = await req.body;
 
       // check the received data
@@ -30,7 +38,7 @@ const handle = async (req, res) => {
           userId,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           "User not found"
         );
         return res
@@ -44,7 +52,7 @@ const handle = async (req, res) => {
           userId,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           "Admins cannot perform this action"
         );
         return res.status(403).json({
@@ -62,13 +70,13 @@ const handle = async (req, res) => {
         },
       });
 
-      // Check daily payment limit
+      // Check daily payment limit, if it's more than the user can make in one day, we send an error
       if (todayPaymentLogs.length >= user.dailyPaymentLimit) {
         await logPaymentAttempt(
           userId,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           "Daily payment limit exceeded"
         );
         return res.status(403).json({
@@ -77,13 +85,13 @@ const handle = async (req, res) => {
         });
       }
 
-      // Check maximum allowed payment amount
+      // Check maximum allowed payment amount, if it excels the max amount, send an error message
       if (amount > MAX_AMOUNT) {
         await logPaymentAttempt(
           userId,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           `Maximum transaction amount exceeded (Limit: ${MAX_AMOUNT} TL)`
         );
         return res.status(403).json({
@@ -92,13 +100,13 @@ const handle = async (req, res) => {
         });
       }
 
-      // Check minimum allowed payment amount
+      // Check minimum allowed payment amount, if it fall short the min amount, send an error message
       if (amount < MIN_AMOUNT) {
         await logPaymentAttempt(
           userId,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           `Minimum transaction amount (Minimum: ${MIN_AMOUNT} TL)`
         );
         return res.status(403).json({
@@ -107,7 +115,7 @@ const handle = async (req, res) => {
         });
       }
 
-      // Find the relevant wallet
+      // Find the user's wallet
       const wallet = await getUniqueData("Wallet", { userId });
 
       if (!wallet) {
@@ -115,7 +123,7 @@ const handle = async (req, res) => {
           userId,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           `Wallet not found for the user`
         );
         return res.status(404).json({
@@ -126,12 +134,6 @@ const handle = async (req, res) => {
 
       // Perform the transaction atomically to avoid partial updates
       const result = await prisma.$transaction(async () => {
-        // await updateDataByAny(
-        //   "User",
-        //   { id: user.id },
-        //   { walletProcessing: true }
-        // );
-
         // Record the transaction
         const newTransaction = await createNewData("Transaction", {
           id: transactionId,
@@ -139,7 +141,7 @@ const handle = async (req, res) => {
           walletId: wallet.id,
           type: "payment",
           amount,
-          status: "PENDING",
+          status: PENDING,
           description: description || "Payment transaction",
         });
 
@@ -159,15 +161,9 @@ const handle = async (req, res) => {
           userId,
           amount,
           newTransaction.id,
-          "SUCCESS",
+          SUCCESS,
           "Making a request for payment"
         );
-
-        // await updateDataByAny(
-        //   "User",
-        //   { id: user.id },
-        //   { walletProcessing: false }
-        // );
 
         return { newTransaction, updatedWallet };
       });
@@ -180,7 +176,7 @@ const handle = async (req, res) => {
     } catch (error) {
       return res.status(500).json({
         status: "error",
-        message: `API CATCH ERROR: ${error.message}`,
+        message: error.message,
       });
     }
   }

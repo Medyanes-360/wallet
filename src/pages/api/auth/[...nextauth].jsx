@@ -32,19 +32,20 @@ const authOptions = {
           }
 
           // if the new ip was allowed to be added, it can be here
-
           const checkUserIp = await getUniqueData("IPlist", {
             userId: findUser.id,
             ipAddress,
           });
 
           if (!checkUserIp) {
+            // if it is a new ip then add it to db
             await createNewData("IPlist", {
               userId: findUser.id,
               ipAddress,
               isActive: true,
             });
           } else {
+            // if no, and the user could sign in, then it means they are in the session, so, turn isActive true to know that there is a user in the session
             await updateDataByAny("IPlist", {
               userId: findUser.id,
               ipAddress,
@@ -52,6 +53,7 @@ const authOptions = {
             });
           }
 
+          // compare the user input password and db password
           // const passwordDecrypt = await DecryptPassword(
           //   password,
           //   findUser.password
@@ -94,56 +96,12 @@ const authOptions = {
       return session;
     },
 
-    // async signIn({ user }) {
-    //   const findUser = await getUniqueData("User", { email: user.email });
-    //   if (findUser.activeSession) {
-    //     const verificationCode = generateVerificationCode();
-
-    //     // Send the verification code to the user's email
-    //     await sendEmail(
-    //       findUser.email,
-    //       "Ofistik: Your Verification Code",
-    //       `Your code is: ${verificationCode}`
-    //     );
-
-    //     const verificationOfSmsCode = await postAPI("/sms/verify-code", {
-    //       verificationCode: sendSMSCode,
-    //       userInput: smsResult.value,
-    //     })
-    //       .then((res) => {
-    //         if (res.status === 200 || res.status === "success") {
-    //           console.log(res.message);
-    //           // need to signout the user
-    //         } else {
-    //           console.log(res.message);
-    //           return false;
-    //         }
-    //       })
-    //       .catch((error) => {
-    //         console.log(error.message);
-    //         return false;
-    //       });
-
-    //     return {
-    //       error: "User is already signed in on another device.",
-    //     };
-    //   }
-
-    //   await updateDataByAny(
-    //     "User",
-    //     { id: findUser.id },
-    //     { activeSession: true }
-    //   );
-
-    //   return true;
-    // },
-
     async signOut({ token }) {
-      // Cleanup: Reset activeSession when the user signs out
+      // after signin out, turn isActive of IP to false as the user signing out because we check whether there is active user using IPs
       await updateDataByAny(
-        "User",
-        { id: token.user.id },
-        { activeSession: false }
+        "IPlist",
+        { userId: token.user.id },
+        { isActive: false }
       );
       return true; // Allow sign out
     },

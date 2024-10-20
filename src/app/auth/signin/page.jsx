@@ -154,6 +154,7 @@ export default function Page() {
       const inputEmail = values.email;
       const inputPassword = values.password;
       const ipAddress = await getUserIP();
+
       await postAPI("/handle-ip", {
         email: inputEmail,
       })
@@ -169,9 +170,9 @@ export default function Page() {
                 if (res.status === 200 || res.status === "success") {
                   console.log(
                     "verificationCode: ",
-                    res.message.verificationCode
+                    res.verificationCode
                   );
-                  return res.message.verificationCode;
+                  return res.verificationCode;
                 } else {
                   console.log(res.message);
                   return null;
@@ -264,9 +265,9 @@ export default function Page() {
                 if (res.status === 200 || res.status === "success") {
                   console.log(
                     "verificationCode: ",
-                    res.message.verificationCode
+                    res.verificationCode
                   );
-                  return res.message.verificationCode;
+                  return res.verificationCode;
                 } else {
                   console.log(res.message);
                   return null;
@@ -354,7 +355,7 @@ export default function Page() {
             const signInRes = await signIn("credentials", {
               email: inputEmail,
               password: inputPassword,
-              ipAddress: "95.91.246.200",
+              ipAddress: "95.91.246.240",
               redirect: false,
             });
             if (signInRes?.error) throw new Error(signInRes.error);

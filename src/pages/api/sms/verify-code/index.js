@@ -1,6 +1,8 @@
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
+      // VerificationCode: the code from send-code API endpoint
+      // userInput: what they enter into the pop up
       const { verificationCode, userInput } = await req.body;
 
       if (!verificationCode || !userInput) {
@@ -14,14 +16,14 @@ const handle = async (req, res) => {
         return res.status(200).json({
           status: "success",
           isVerified: true,
-          message: "Verification code matches."
+          message: "Verification code matches.",
         });
       }
 
       return res.status(403).json({
         status: "error",
         isVerified: false,
-        message: "Verification code does not match."
+        message: "Verification code does not match.",
       });
     } catch (error) {
       return res.status(500).json({

@@ -3,15 +3,15 @@ import { getAllData, getUniqueData } from "../../../services/serviceOperations";
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
-      // Get both token and action
-      const { email, ipAddress } = req.body;
+      // Get both email and ipAddress, since this API call happens before nextAuth sign-in call
+      const { email, ipAddress = "95.91.246.240" } = req.body;
 
-      // if (!email || !ipAddress) {
-      //   return res.status(400).json({
-      //     status: "error",
-      //     message: "Invalid email or ip address",
-      //   });
-      // }
+      if (!email || !ipAddress) {
+        return res.status(400).json({
+          status: "error",
+          message: "Invalid email or ip address",
+        });
+      }
 
       // check the user data in db
       const user = await getUniqueData("User", { email });
@@ -21,17 +21,18 @@ const handle = async (req, res) => {
           .json({ status: "error", message: "User not found" });
       }
 
+      // check the ip data in db
       const checkUserIp = await getUniqueData("IPlist", {
         userId: user.id,
         ipAddress,
       });
 
-      // check if there is already a user in the session
       const activeIP = await getAllData("IPlist", {
         userId: user.id,
         isActive: true,
       });
 
+      // check if there is already a user in the session via checking ip for isActive
       if (activeIP.length !== 0) {
         return res.status(200).json({
           status: "info",
@@ -41,7 +42,7 @@ const handle = async (req, res) => {
         });
       }
 
-      // If an active IP exists, skip the rest. Otherwise, send an email confirmation. If correct, proceed to sign-in and add the new IP to the list. However, if there is already a user in the session, we don't add the ip and make sure that the session is free then we would be able to add a new ip to the list
+      // if the ip is new and is not in the db, we are sending confirmation code to the email of the user
       if (!checkUserIp) {
         return res.status(200).json({
           status: "info",
@@ -51,6 +52,7 @@ const handle = async (req, res) => {
         });
       }
 
+      // if the user ip is blocked, then we are simply showing a pop up and stopping the process
       if (checkUserIp.isBlocked) {
         return res.status(403).json({
           status: "error",
@@ -60,6 +62,7 @@ const handle = async (req, res) => {
         });
       }
 
+      // if everything is okay, this means that the user ip is in the db and there is no active user in the session, so it's free to sign-in
       return res.status(200).json({
         status: "success",
         message: "Everything is good so far",

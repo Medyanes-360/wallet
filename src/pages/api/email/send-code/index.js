@@ -5,6 +5,7 @@ import sendEmail from "../../../../services/sendEmail";
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
+      // we must get the email to send a verificationCode
       const { email } = await req.body;
 
       if (!email) {
@@ -23,22 +24,20 @@ const handle = async (req, res) => {
       }
 
       const sendEmailVerificationCode = async () => {
-        const verificationCode = generateVerificationCode().toString();
-        const html = `<h3>Your verification code is: ${verificationCode}</h3>`;
+        const verificationCode = generateVerificationCode();
+        // messageHtml is for nodemailer inside of sendEmail function
+        const messageHtml = `<h3>Your verification code is: ${verificationCode}</h3>`;
 
-        await sendEmail(email, "Verification Code", html);
+        await sendEmail(email, "Verification Code", messageHtml);
 
-        return {
-          verificationCode,
-          message: html,
-        };
+        return verificationCode;
       };
 
       const emailResponse = await sendEmailVerificationCode();
 
       return res.status(200).json({
         status: "success",
-        message: emailResponse,
+        verificationCode: emailResponse,
       });
     } catch (error) {
       return res.status(500).json({
