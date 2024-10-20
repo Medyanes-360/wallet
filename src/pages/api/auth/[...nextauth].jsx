@@ -3,13 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import DecryptPassword from "../../../lib/decryptPassword";
 import {
   createNewData,
+  getAllData,
   getUniqueData,
   updateDataByAny,
 } from "../../../services/serviceOperations";
-import sendEmail from "../../../services/sendEmail";
-import { generateJwtToken } from "../../../services/generateJwtToken";
-import { getSession } from "next-auth";
-import { generateVerificationCode } from "../../../services/generateVerificationCode";
 
 const authOptions = {
   providers: [
@@ -34,28 +31,41 @@ const authOptions = {
             throw new Error("Invalid email or password");
           }
 
-          // check whether isBlocked in ipList is true or false
+          // if the new ip was allowed to be added, it can be here
+
           const checkUserIp = await getUniqueData("IPlist", {
             userId: findUser.id,
-            ipAddress: ipAddress,
+            ipAddress,
           });
 
-          if (checkUserIp.isBlocked) {
-            throw new Error("Invalid IP address");
+          if (!checkUserIp) {
+            await createNewData("IPlist", {
+              userId: findUser.id,
+              ipAddress,
+              isActive: true,
+            });
+          } else {
+            await updateDataByAny("IPlist", {
+              userId: findUser.id,
+              ipAddress,
+              isActive: true,
+            });
           }
 
-          const passwordDecrypt = await DecryptPassword(
-            password,
-            findUser.password
-          );
+          // const passwordDecrypt = await DecryptPassword(
+          //   password,
+          //   findUser.password
+          // );
 
-          if (!passwordDecrypt) {
-            throw new Error("Invalid email or password");
-          }
+          // if (!passwordDecrypt) {
+          //   throw new Error("Invalid email or password");
+          // }
 
           return findUser;
         } catch (error) {
-          throw new Error(error.message || "Authentication failed");
+          throw new Error(
+            `ERROR HEHEHE: ${error.message}` || "Authentication failed"
+          );
         }
       },
     }),
@@ -84,49 +94,49 @@ const authOptions = {
       return session;
     },
 
-    async signIn({ user }) {
-      const findUser = await getUniqueData("User", { email: user.email });
-      if (findUser.activeSession) {
-        const verificationCode = generateVerificationCode();
+    // async signIn({ user }) {
+    //   const findUser = await getUniqueData("User", { email: user.email });
+    //   if (findUser.activeSession) {
+    //     const verificationCode = generateVerificationCode();
 
-        // Send the verification code to the user's email
-        await sendEmail(
-          findUser.email,
-          "Ofistik: Your Verification Code",
-          `Your code is: ${verificationCode}`
-        );
+    //     // Send the verification code to the user's email
+    //     await sendEmail(
+    //       findUser.email,
+    //       "Ofistik: Your Verification Code",
+    //       `Your code is: ${verificationCode}`
+    //     );
 
-        const verificationOfSmsCode = await postAPI("/sms/verify-code", {
-          verificationCode: sendSMSCode,
-          userInput: smsResult.value,
-        })
-          .then((res) => {
-            if (res.status === 200 || res.status === "success") {
-              console.log(res.message);
-              // need to signout the user
-            } else {
-              console.log(res.message);
-              return false;
-            }
-          })
-          .catch((error) => {
-            console.log(error.message);
-            return false;
-          });
+    //     const verificationOfSmsCode = await postAPI("/sms/verify-code", {
+    //       verificationCode: sendSMSCode,
+    //       userInput: smsResult.value,
+    //     })
+    //       .then((res) => {
+    //         if (res.status === 200 || res.status === "success") {
+    //           console.log(res.message);
+    //           // need to signout the user
+    //         } else {
+    //           console.log(res.message);
+    //           return false;
+    //         }
+    //       })
+    //       .catch((error) => {
+    //         console.log(error.message);
+    //         return false;
+    //       });
 
-        return {
-          error: "User is already signed in on another device.",
-        };
-      }
+    //     return {
+    //       error: "User is already signed in on another device.",
+    //     };
+    //   }
 
-      await updateDataByAny(
-        "User",
-        { id: findUser.id },
-        { activeSession: true }
-      );
+    //   await updateDataByAny(
+    //     "User",
+    //     { id: findUser.id },
+    //     { activeSession: true }
+    //   );
 
-      return true;
-    },
+    //   return true;
+    // },
 
     async signOut({ token }) {
       // Cleanup: Reset activeSession when the user signs out

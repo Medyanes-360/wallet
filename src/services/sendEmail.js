@@ -1,18 +1,16 @@
 import nodemailer from "nodemailer";
 
-// ! THE EMAIL CANNOT BE SENT. IT MIGHT BE BECAUSE OF EMAILS (SENDER/RECEIVER) HAVING SECURITY ISSUES
-
 const sendEmail = async (userEmail, subject, message) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.EMAIL_USER,
+      user: process.env.NEXT_PUBLIC_EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
   });
 
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.NEXT_PUBLIC_EMAIL_USER,
     to: userEmail,
     subject,
     html: message,

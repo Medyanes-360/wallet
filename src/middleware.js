@@ -8,20 +8,26 @@ export default withAuth(async function middleware(req) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  const currentPath = req.nextUrl.pathname
+  const currentPath = req.nextUrl.pathname;
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL 
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   if (!session) {
     return NextResponse.rewrite(`${baseUrl}/login`);
   }
 
-  if(session.role === "USER" && currentPath.startsWith("/admin")) {
-    return NextResponse.rewrite(`${baseUrl}/`)
+  if (session.role === "USER" && currentPath.startsWith("/admin")) {
+    return NextResponse.rewrite(`${baseUrl}/`);
+  }
+
+  if (session.role === "USER" && currentPath.startsWith("/api")) {
+    return NextResponse.rewrite(`${baseUrl}/`);
   }
 
   return NextResponse.next();
 });
+
+// middleware must work everywhere, but if conditions should be changed
 
 export const config = {
   matcher: ["/api/payment", "/api/withdraw", "/api/transfer"],

@@ -1,4 +1,4 @@
 import jwt from "jsonwebtoken";
 
 export const generateJwtToken = (payload) =>
-  jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "5m" });
+  jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2m" });

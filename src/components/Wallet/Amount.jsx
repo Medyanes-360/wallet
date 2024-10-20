@@ -4,6 +4,8 @@ import Swal from "sweetalert2";
 import { RiArrowRightWideLine, RiArrowLeftWideLine } from "react-icons/ri";
 import { postAPI } from "../../services/fetchAPI";
 import { v4 as uuidv4 } from "uuid";
+import { generateJwtToken } from "../../services/generateJwtToken";
+import generateHashedLink from "../../services/generateHashedLink";
 
 export default function Amount({
   amount,
@@ -57,7 +59,7 @@ export default function Amount({
             amount,
             transactionId,
             description: "My new payment",
-          }) 
+          })
             .then((res) => {
               if (res.status === 200 || res.status === "success") {
                 console.log(res.data);

@@ -25,7 +25,6 @@ const handle = async (req, res) => {
 
       // check the user data in db
       const user = await getUniqueData("User", { id: userId });
-
       if (!user) {
         await logPaymentAttempt(
           userId,
@@ -39,7 +38,6 @@ const handle = async (req, res) => {
           .json({ status: "error", message: "User not found" });
       }
 
-      //? If I need to add user role check, then it should return an error in case of user being an Admin?
       // check the user role
       if (user.role && user.role === "ADMIN") {
         await logPaymentAttempt(
@@ -55,16 +53,7 @@ const handle = async (req, res) => {
         });
       }
 
-      // Fetch payment attempts made by the user today
-      // const todayPayments = await getAllData("Transaction", {
-      //   userId: user.id,
-      //   type: "payment",
-      //   createdAt: {
-      //     gte: new Date(new Date().setHours(0, 0, 0, 0)), // Start of the day
-      //     lt: new Date(new Date().setHours(23, 59, 59, 999)), // End of the day
-      //   },
-      // });
-
+      // Fetch logs made for payment attempts made by the user today
       const todayPaymentLogs = await getAllData("PaymentLog", {
         userId: user.id,
         timestamp: {
@@ -73,7 +62,6 @@ const handle = async (req, res) => {
         },
       });
 
-      //? Çünkü max günlük işlem sayısında başarısız işlemleri de saymalıyız
       // Check daily payment limit
       if (todayPaymentLogs.length >= user.dailyPaymentLimit) {
         await logPaymentAttempt(
@@ -138,11 +126,12 @@ const handle = async (req, res) => {
 
       // Perform the transaction atomically to avoid partial updates
       const result = await prisma.$transaction(async () => {
-        await updateDataByAny(
-          "User",
-          { id: user.id },
-          { walletProcessing: true }
-        );
+        // await updateDataByAny(
+        //   "User",
+        //   { id: user.id },
+        //   { walletProcessing: true }
+        // );
+
         // Record the transaction
         const newTransaction = await createNewData("Transaction", {
           id: transactionId,
@@ -174,11 +163,11 @@ const handle = async (req, res) => {
           "Making a request for payment"
         );
 
-        await updateDataByAny(
-          "User",
-          { id: user.id },
-          { walletProcessing: false }
-        );
+        // await updateDataByAny(
+        //   "User",
+        //   { id: user.id },
+        //   { walletProcessing: false }
+        // );
 
         return { newTransaction, updatedWallet };
       });
