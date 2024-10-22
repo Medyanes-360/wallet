@@ -20,8 +20,6 @@ export default withAuth(async function middleware(req) {
   }
 
   // Restrict access to "/admin" pages and API routes if the user's role is "USER"
-
-  // Restrict access to "/admin" pages if the user's role is "USER"
   if (session.role === "USER" && currentPath.startsWith("/admin") || currentPath.startsWith("/api")) {
     return NextResponse.rewrite(`${baseUrl}/`); // Rewrite to the home page
   }
@@ -32,5 +30,5 @@ export default withAuth(async function middleware(req) {
 
 // config will be deleted later to make middleware work everywhere
 export const config = {
-  matcher: ["/api/payment", "/api/withdraw", "/api/transfer"],
+  matcher: ["/api/payment", "/api/withdraw", "/api/transfer", "/wallet"],
 };

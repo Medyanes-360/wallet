@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import DecryptPassword from "../../../lib/decryptPassword";
 import {
   createNewData,
+  deleteDataByAny,
   getAllData,
   getUniqueData,
   updateDataByAny,
@@ -89,15 +90,30 @@ const authOptions = {
       return token;
     },
 
-    async session({ session, token }) {
+    async session({ session, token, user }) {
       if (token?.user) {
         session.user = token.user;
       }
+
+      // Find the current session in the database for the logged-in user
+      const currentSession = await getUniqueData("Session", {
+        userId: user.id,
+      });
+
+      // If there's an active session and it has a different sessionToken from the current one, invalidate it
+      if (currentSession && currentSession.sessionToken !== token.jti) {
+        // Delete the previous session, allowing only one active session
+        await deleteDataByAny("Session", {
+          sessionToken: currentSession.sessionToken,
+        });
+      }
+
+      // Continue with the current session
       return session;
     },
 
     async signOut({ token }) {
-      // after signin out, turn isActive of IP to false as the user signing out because we check whether there is active user using IPs
+      // After signin out, turn isActive of IP to false as the user signing out because we check whether there is active user using IPs
       await updateDataByAny(
         "IPlist",
         { userId: token.user.id },

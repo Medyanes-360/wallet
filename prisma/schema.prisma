@@ -8,22 +8,18 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  email       String    @unique
-  password    String // Store hashed passwords
-  fullName    String
-  phoneNumber String?   @unique
-  dateOfBirth DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  isVerified  Boolean   @default(false) // For email verification
-  isBlocked   Boolean   @default(false) // To block suspicious accounts
-  role        UserRole  @default(USER) // User role (USER, ADMIN, etc.)
-  // walletProcessing Boolean   @default(false) // wallet islemi giden kullaniciya diger kullanici katilmak isterse o zaman check (login api sinde kontrol olunsun) eger islem varsa error versin, aksi taktirde next yapalim
-
-  // activeSession Boolean @default(false) // Track if user is signed in
-
-  dailyPaymentLimit Int @default(3)
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  email             String    @unique
+  password          String // Store hashed passwords
+  fullName          String
+  phoneNumber       String?   @unique
+  dateOfBirth       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  isVerified        Boolean   @default(false) // For email verification
+  isBlocked         Boolean   @default(false) // To block suspicious accounts
+  role              UserRole  @default(USER) // User role (USER, ADMIN, etc.)
+  dailyPaymentLimit Int       @default(3)
 
   wallet   Wallet? @relation(fields: [walletId], references: [id])
   walletId String? @unique @db.ObjectId
@@ -32,9 +28,7 @@ model User {
   transactions Transaction[] // Relation to transactions made by the user
   paymentLogs  PaymentLog[] // Relation to payment logs made by the user
   ipList       IPlist[] // Relation to IP list entries
-
-  // ipWhitelist  IpWhitelist[] // Relation to IP whitelist entries
-  // IpDarklist   IpDarklist[] // Relation to IP darklist entries
+  Session      Session?
 }
 
 model Wallet {
@@ -98,23 +92,17 @@ model IPlist {
   user User? @relation(fields: [userId], references: [id])
 }
 
-// model IpWhitelist {
-//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-//   userId    String?  @db.ObjectId
-//   ipAddress String   @unique
-//   addedAt   DateTime @default(now())
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @unique @db.ObjectId
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  expires      DateTime
+  sessionToken String   @unique
+  isActive     Boolean  @default(false)
 
-//   user User? @relation(fields: [userId], references: [id])
-// }
-
-// model IpDarklist {
-//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-//   userId    String?  @db.ObjectId
-//   ipAddress String   @unique
-//   addedAt   DateTime @default(now())
-
-//   user User? @relation(fields: [userId], references: [id])
-// }
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
 enum UserRole {
   USER
