@@ -4,11 +4,15 @@ import WalletMain from "./WalletMain";
 import WalletNavigation from "./WalletNavigation";
 import { useEffect, useState } from "react";
 import useActivityTracker from "../../hooks/useActivityTracker";
+import { useSession } from "next-auth/react";
 
 export default function MainComponent() {
+  const {data: session} = useSession()
   const [page, setPage] = useState("wallet"); // wallet,transactions
   const [login, setLogin] = useState(false);
   useActivityTracker();
+
+  console.log(session)
 
   // session varsa login true olur
 

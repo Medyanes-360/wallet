@@ -98,7 +98,7 @@ model Session {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   expires      DateTime
-  sessionToken String   @unique
+  sessionToken String   @unique @db.ObjectId
   isActive     Boolean  @default(false)
 
   User User @relation(fields: [userId], references: [id], onDelete: Cascade)

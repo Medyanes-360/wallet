@@ -8,6 +8,7 @@ import {
   getUniqueData,
   updateDataByAny,
 } from "../../../services/serviceOperations";
+import { signIn } from "next-auth/react";
 
 const authOptions = {
   providers: [
@@ -88,6 +89,31 @@ const authOptions = {
         token.user = { ...user };
       }
       return token;
+    },
+
+    async signIn({ user, profile, email, credentials }) {
+      // Find an existing active session for the user
+      const existingSession = await getUniqueData("Session", {
+        userId: user.id,
+      });
+
+      if (existingSession) {
+        // If an existing session is found, delete it to invalidate the old session
+        await deleteDataByAny("Session", {
+          sessionToken: existingSession.sessionToken,
+        });
+      }
+
+      const newSession = await prisma.session.create({
+        data: {
+          userId: user.id,
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day expiry
+          isActive: true,
+        }
+      })
+
+      // Create a new session for the new login
+      return true; // Continue with the new sign-in process
     },
 
     async session({ session, token, user }) {
