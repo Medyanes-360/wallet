@@ -4,13 +4,17 @@ import {
 } from "../../../services/serviceOperations";
 import logPaymentAttempt from "../../../services/logPaymentAttempt";
 
+const SUCCESS = "SUCCESS"
+const PENDING = "PENDING"
+const FAILURE = "FAILURE"
+
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
-      const { userId, userIp, transactionId, amount, description } =
+      const { userId, transactionId, amount, description } =
         await req.body;
 
-      if (!userId || !userIp || amount <= 0 || !amount) {
+      if (!userId || amount <= 0 || !amount) {
         return res.status(400).json({
           status: "error",
           message: "Invalid userId, userIp or amount",
@@ -24,31 +28,12 @@ const handle = async (req, res) => {
           userId,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           "User not found"
         );
         return res.status(404).json({
           status: "error",
           message: "User not found",
-        });
-      }
-
-      // check the user ip in db
-      const checkUserIp = await getUniqueData("ipWhitelist", {
-        userId,
-        ipAddress: userIp,
-      });
-      if (!checkUserIp) {
-        await logPaymentAttempt(
-          userId,
-          amount,
-          transactionId,
-          "FAILURE",
-          "User IP not found"
-        );
-        return res.status(404).json({
-          status: "error",
-          message: "User IP not found",
         });
       }
 
@@ -58,12 +43,36 @@ const handle = async (req, res) => {
           userId,
           amount,
           transactionId,
-          "FAILURE",
-          "Admins cannot perform this action"
+          FAILURE,
+          "The action cannot be performed"
         );
         return res.status(403).json({
           status: "error",
-          message: "Admins are not allowed to perform this action",
+          message: "The action cannot be performed",
+        });
+      }
+
+      const todayPaymentLogs = await getAllData("PaymentLog", {
+        userId: user.id,
+        timestamp: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)), // Start of the day
+          lt: new Date(new Date().setHours(23, 59, 59, 999)), // End of the day
+        },
+      });
+
+      //? Çünkü max günlük işlem sayısında başarısız işlemleri de saymalıyız
+      // Check daily payment limit
+      if (todayPaymentLogs.length >= user.dailyPaymentLimit) {
+        await logPaymentAttempt(
+          user.id,
+          amount,
+          transactionId,
+          FAILURE,
+          "Daily payment limit exceeded"
+        );
+        return res.status(403).json({
+          status: "error",
+          message: "Daily payment limit exceeded.",
         });
       }
 
@@ -73,7 +82,7 @@ const handle = async (req, res) => {
           userId,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           `Wallet not found for the user`
         );
         return res.status(404).json({
@@ -90,7 +99,7 @@ const handle = async (req, res) => {
           wallet: wallet.id,
           type: "withdraw",
           amount,
-          status: "PENDING",
+          status: PENDING,
           description: description || "Money withdrawal",
         });
 
@@ -98,7 +107,7 @@ const handle = async (req, res) => {
           userId,
           amount,
           transactionId,
-          "PENDING",
+          PENDING,
           "Withdraw request made"
         );
 
@@ -110,6 +119,7 @@ const handle = async (req, res) => {
         message: "API request succeedeed",
         data: {
           transaction,
+          //? Gotta decide who admin should get withdraw req. from DB or as an API req?
           isVerified: true,
         },
       });

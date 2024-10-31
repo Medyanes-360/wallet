@@ -7,9 +7,9 @@ import {
   updateDataByAny,
 } from "../../../services/serviceOperations";
 
-const SUCCESS = "SUCCESS"
-const PENDING = "PENDING"
-const FAILURE = "FAILURE"
+const SUCCESS = "SUCCESS";
+const PENDING = "PENDING";
+const FAILURE = "FAILURE";
 
 const MAX_AMOUNT = 50000;
 const MIN_AMOUNT = 250;
@@ -53,11 +53,11 @@ const handle = async (req, res) => {
           amount,
           transactionId,
           FAILURE,
-          "Admins cannot perform this action"
+          "The action cannot be performed"
         );
         return res.status(403).json({
           status: "error",
-          message: "Admins are not allowed to perform this action",
+          message: "The action cannot be performed",
         });
       }
 

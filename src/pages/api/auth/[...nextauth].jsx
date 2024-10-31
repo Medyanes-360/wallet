@@ -86,12 +86,47 @@ const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        // Attach user details to token
         token.user = { ...user };
+
+        // Get expiration timestamp from the token.
+        // Convert it to a JS Date object, multiply it by 1000 (because Date uses milliseconds).
+        const expirationDate = new Date(token.exp * 1000); // Convert 'exp' to milliseconds
+
+        // A new token is being created and saved in the database
+        await createNewData("Session", {
+          userId: user.id,
+          sessionToken: token.jti,
+          expires: expirationDate,
+        });
       }
       return token;
     },
 
-    async signIn({ user, profile, email, credentials }) {
+    async session({ session, token }) {
+      // Pass the user object to the session
+      if (token?.user) {
+        session.user = token.user;
+      }
+
+      // Find the current session in the database for the logged-in user
+      const currentSession = await getUniqueData("Session", {
+        userId: token.user.id,
+      });
+
+      // If there's an active session and it has a different sessionToken from the current one, invalidate it
+      if (currentSession && currentSession.sessionToken !== token.jti) {
+        // Invalidate the previous session by deleting it
+        await deleteDataByAny("Session", {
+          sessionToken: currentSession.sessionToken,
+        });
+      }
+
+      // Continue with the current session
+      return session;
+    },
+
+    async signIn({ user }) {
       // Find an existing active session for the user
       const existingSession = await getUniqueData("Session", {
         userId: user.id,
@@ -104,38 +139,7 @@ const authOptions = {
         });
       }
 
-      const newSession = await prisma.session.create({
-        data: {
-          userId: user.id,
-          expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day expiry
-          isActive: true,
-        }
-      })
-
-      // Create a new session for the new login
-      return true; // Continue with the new sign-in process
-    },
-
-    async session({ session, token, user }) {
-      if (token?.user) {
-        session.user = token.user;
-      }
-
-      // Find the current session in the database for the logged-in user
-      const currentSession = await getUniqueData("Session", {
-        userId: user.id,
-      });
-
-      // If there's an active session and it has a different sessionToken from the current one, invalidate it
-      if (currentSession && currentSession.sessionToken !== token.jti) {
-        // Delete the previous session, allowing only one active session
-        await deleteDataByAny("Session", {
-          sessionToken: currentSession.sessionToken,
-        });
-      }
-
-      // Continue with the current session
-      return session;
+      return true;
     },
 
     async signOut({ token }) {

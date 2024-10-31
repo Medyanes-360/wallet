@@ -155,219 +155,221 @@ export default function Page() {
       const inputPassword = values.password;
       const ipAddress = await getUserIP();
 
-      await postAPI("/handle-ip", {
+      const signInRes = await signIn("credentials", {
         email: inputEmail,
-      })
-        .then(async (res) => {
-          if (res.isIPBlocked) {
-            ipIsBlockedNotification(res.message);
-          } else if (res.isIPActive) {
-            // new IP/IP is in IPlist, active session
-            const sendEmailCode = await postAPI("/email/send-code", {
-              email: inputEmail,
-            })
-              .then((res) => {
-                if (res.status === 200 || res.status === "success") {
-                  console.log(
-                    "verificationCode: ",
-                    res.verificationCode
-                  );
-                  return res.verificationCode;
-                } else {
-                  console.log(res.message);
-                  return null;
-                }
-              })
-              .catch((error) => {
-                console.log(error.message);
-                return null;
-              });
+        password: inputPassword,
+        ipAddress: "95.91.246.240",
+        redirect: false,
+      });
+      if (signInRes?.error) throw new Error(signInRes.error);
+      router.push("/");
 
-            if (!sendEmailCode) {
-              Swal.fire("Hata", "Email kodu gönderilemedi.", "error");
-              return false;
-            }
+      // await postAPI("/handle-ip", {
+      //   email: inputEmail,
+      // })
+      //   .then(async (res) => {
+      //     if (res.isIPBlocked) {
+      //       ipIsBlockedNotification(res.message);
+      //     } else if (res.isIPActive) {
+      //       // new IP/IP is in IPlist, active session
+      //       const sendEmailCode = await postAPI("/email/send-code", {
+      //         email: inputEmail,
+      //       })
+      //         .then((res) => {
+      //           if (res.status === 200 || res.status === "success") {
+      //             console.log(
+      //               "verificationCode: ",
+      //               res.verificationCode
+      //             );
+      //             return res.verificationCode;
+      //           } else {
+      //             console.log(res.message);
+      //             return null;
+      //           }
+      //         })
+      //         .catch((error) => {
+      //           console.log(error.message);
+      //           return null;
+      //         });
 
-            let attempts = 3;
-            let isVerified = false;
-            while (attempts > 0 && !isVerified) {
-              const emailResult = await ipIsActiveNotification(res.message);
+      //       if (!sendEmailCode) {
+      //         Swal.fire("Hata", "Email kodu gönderilemedi.", "error");
+      //         return false;
+      //       }
 
-              if (emailResult.isConfirmed) {
-                const verificationOfEmailCode = await postAPI(
-                  "/email/verify-code",
-                  {
-                    verificationCode: sendEmailCode,
-                    userInput: emailResult.value,
-                  }
-                )
-                  .then((res) => {
-                    if (res.status === 200 || res.status === "success") {
-                      console.log(res.message);
-                      return res.isVerified;
-                    }
-                  })
-                  .catch((error) => {
-                    console.log(error.message);
-                    return false;
-                  });
+      //       let attempts = 3;
+      //       let isVerified = false;
+      //       while (attempts > 0 && !isVerified) {
+      //         const emailResult = await ipIsActiveNotification(res.message);
 
-                if (verificationOfEmailCode) {
-                  Swal.fire(
-                    "Onaylandı!",
-                    "İşleminiz başarıyla tamamlandı.",
-                    "success"
-                  );
+      //         if (emailResult.isConfirmed) {
+      //           const verificationOfEmailCode = await postAPI(
+      //             "/email/verify-code",
+      //             {
+      //               verificationCode: sendEmailCode,
+      //               userInput: emailResult.value,
+      //             }
+      //           )
+      //             .then((res) => {
+      //               if (res.status === 200 || res.status === "success") {
+      //                 console.log(res.message);
+      //                 return res.isVerified;
+      //               }
+      //             })
+      //             .catch((error) => {
+      //               console.log(error.message);
+      //               return false;
+      //             });
 
-                  isVerified = true;
-                  const signInRes = await signIn("credentials", {
-                    email: inputEmail,
-                    password: inputPassword,
-                    ipAddress: "95.91.246.240",
-                    redirect: false,
-                  });
-                  if (signInRes?.error) throw new Error(signInRes.error);
-                  router.push("/wallet");
-                } else {
-                  attempts -= 1;
-                  await Swal.fire({
-                    title: "Hatalı Kod",
-                    text: `Girdiğiniz kod yanlış. Kalan giriş hakkı: ${attempts}`,
-                    icon: "error",
-                    timer: 2000,
-                    showConfirmButton: false,
-                  });
-                  await new Promise((resolve) => setTimeout(resolve, 10));
-                }
-              } else {
-                Swal.fire(
-                  "İşlem İptal Edildi",
-                  "Giriş işlemi iptal edildi.",
-                  "error"
-                );
-                return false;
-              }
-            }
-            if (!isVerified) {
-              Swal.fire(
-                "İşlem Başarısız",
-                "3 defa yanlış kod girildiği için işlem iptal edildi.",
-                "error"
-              );
-              return false;
-            }
-          } else if (res.isConfirmationRequired) {
-            // new IP, no session
-            const sendEmailCode = await postAPI("/email/send-code", {
-              email: inputEmail,
-            })
-              .then((res) => {
-                if (res.status === 200 || res.status === "success") {
-                  console.log(
-                    "verificationCode: ",
-                    res.verificationCode
-                  );
-                  return res.verificationCode;
-                } else {
-                  console.log(res.message);
-                  return null;
-                }
-              })
-              .catch((error) => {
-                console.log(error.message);
-                return null;
-              });
+      //           if (verificationOfEmailCode) {
+      //             Swal.fire(
+      //               "Onaylandı!",
+      //               "İşleminiz başarıyla tamamlandı.",
+      //               "success"
+      //             );
 
-            if (!sendEmailCode) {
-              Swal.fire("Hata", "Email kodu gönderilemedi.", "error");
-              return false;
-            }
+      //             isVerified = true;
+      //             const signInRes = await signIn("credentials", {
+      //               email: inputEmail,
+      //               password: inputPassword,
+      //               ipAddress: "95.91.246.240",
+      //               redirect: false,
+      //             });
+      //             if (signInRes?.error) throw new Error(signInRes.error);
+      //             router.push("/wallet");
+      //           } else {
+      //             attempts -= 1;
+      //             await Swal.fire({
+      //               title: "Hatalı Kod",
+      //               text: `Girdiğiniz kod yanlış. Kalan giriş hakkı: ${attempts}`,
+      //               icon: "error",
+      //               timer: 2000,
+      //               showConfirmButton: false,
+      //             });
+      //             await new Promise((resolve) => setTimeout(resolve, 10));
+      //           }
+      //         } else {
+      //           Swal.fire(
+      //             "İşlem İptal Edildi",
+      //             "Giriş işlemi iptal edildi.",
+      //             "error"
+      //           );
+      //           return false;
+      //         }
+      //       }
+      //       if (!isVerified) {
+      //         Swal.fire(
+      //           "İşlem Başarısız",
+      //           "3 defa yanlış kod girildiği için işlem iptal edildi.",
+      //           "error"
+      //         );
+      //         return false;
+      //       }
+      //     } else if (res.isConfirmationRequired) {
+      //       // new IP, no session
+      //       const sendEmailCode = await postAPI("/email/send-code", {
+      //         email: inputEmail,
+      //       })
+      //         .then((res) => {
+      //           if (res.status === 200 || res.status === "success") {
+      //             console.log(
+      //               "verificationCode: ",
+      //               res.verificationCode
+      //             );
+      //             return res.verificationCode;
+      //           } else {
+      //             console.log(res.message);
+      //             return null;
+      //           }
+      //         })
+      //         .catch((error) => {
+      //           console.log(error.message);
+      //           return null;
+      //         });
 
-            let attempts = 3;
-            let isVerified = false;
-            while (attempts > 0 && !isVerified) {
-              const emailResult = await ipConfirmationNotification(res.message);
+      //       if (!sendEmailCode) {
+      //         Swal.fire("Hata", "Email kodu gönderilemedi.", "error");
+      //         return false;
+      //       }
 
-              if (emailResult.isConfirmed) {
-                const verificationOfEmailCode = await postAPI(
-                  "/email/verify-code",
-                  {
-                    verificationCode: sendEmailCode,
-                    userInput: emailResult.value,
-                  }
-                )
-                  .then((res) => {
-                    if (res.status === 200 || res.status === "success") {
-                      console.log(res.message);
-                      return res.isVerified;
-                    }
-                  })
-                  .catch((error) => {
-                    console.log(error.message);
-                    return false;
-                  });
+      //       let attempts = 3;
+      //       let isVerified = false;
+      //       while (attempts > 0 && !isVerified) {
+      //         const emailResult = await ipConfirmationNotification(res.message);
 
-                if (verificationOfEmailCode) {
-                  Swal.fire(
-                    "Onaylandı!",
-                    "İşleminiz başarıyla tamamlandı.",
-                    "success"
-                  );
+      //         if (emailResult.isConfirmed) {
+      //           const verificationOfEmailCode = await postAPI(
+      //             "/email/verify-code",
+      //             {
+      //               verificationCode: sendEmailCode,
+      //               userInput: emailResult.value,
+      //             }
+      //           )
+      //             .then((res) => {
+      //               if (res.status === 200 || res.status === "success") {
+      //                 console.log(res.message);
+      //                 return res.isVerified;
+      //               }
+      //             })
+      //             .catch((error) => {
+      //               console.log(error.message);
+      //               return false;
+      //             });
 
-                  isVerified = true;
-                  const signInRes = await signIn("credentials", {
-                    email: inputEmail,
-                    password: inputPassword,
-                    ipAddress: "95.91.246.240",
-                    redirect: false,
-                  });
-                  if (signInRes?.error) throw new Error(signInRes.error);
-                  router.push("/wallet");
-                } else {
-                  attempts -= 1;
-                  await Swal.fire({
-                    title: "Hatalı Kod",
-                    text: `Girdiğiniz kod yanlış. Kalan giriş hakkı: ${attempts}`,
-                    icon: "error",
-                    timer: 2000,
-                    showConfirmButton: false,
-                  });
-                  await new Promise((resolve) => setTimeout(resolve, 10));
-                }
-              } else {
-                Swal.fire(
-                  "İşlem İptal Edildi",
-                  "Giriş işlemi iptal edildi.",
-                  "error"
-                );
-                return false;
-              }
-            }
-            if (!isVerified) {
-              Swal.fire(
-                "İşlem Başarısız",
-                "3 defa yanlış kod girildiği için işlem iptal edildi.",
-                "error"
-              );
-              return false;
-            }
-          } else {
-            const signInRes = await signIn("credentials", {
-              email: inputEmail,
-              password: inputPassword,
-              ipAddress: "95.91.246.240",
-              redirect: false,
-            });
-            if (signInRes?.error) throw new Error(signInRes.error);
-            router.push("/");
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-        })
-        .finally(() => {
-          // resetForm();
-        });
+      //           if (verificationOfEmailCode) {
+      //             Swal.fire(
+      //               "Onaylandı!",
+      //               "İşleminiz başarıyla tamamlandı.",
+      //               "success"
+      //             );
+
+      //             isVerified = true;
+      //             const signInRes = await signIn("credentials", {
+      //               email: inputEmail,
+      //               password: inputPassword,
+      //               ipAddress: "95.91.246.240",
+      //               redirect: false,
+      //             });
+      //             if (signInRes?.error) throw new Error(signInRes.error);
+      //             router.push("/wallet");
+      //           } else {
+      //             attempts -= 1;
+      //             await Swal.fire({
+      //               title: "Hatalı Kod",
+      //               text: `Girdiğiniz kod yanlış. Kalan giriş hakkı: ${attempts}`,
+      //               icon: "error",
+      //               timer: 2000,
+      //               showConfirmButton: false,
+      //             });
+      //             await new Promise((resolve) => setTimeout(resolve, 10));
+      //           }
+      //         } else {
+      //           Swal.fire(
+      //             "İşlem İptal Edildi",
+      //             "Giriş işlemi iptal edildi.",
+      //             "error"
+      //           );
+      //           return false;
+      //         }
+      //       }
+      //       if (!isVerified) {
+      //         Swal.fire(
+      //           "İşlem Başarısız",
+      //           "3 defa yanlış kod girildiği için işlem iptal edildi.",
+      //           "error"
+      //         );
+      //         return false;
+      //       }
+      //     } else {
+      //      console.log("sign in without problems")
+      //     }
+      //   })
+      //   .catch((err) => {
+      //     console.error(err);
+      //   })
+      //   .finally(() => {
+      //     // resetForm();
+      //   });
     },
   });
 

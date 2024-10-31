@@ -6,13 +6,16 @@ import {
   updateDataByAny,
 } from "../../../services/serviceOperations";
 
+const SUCCESS = "SUCCESS";
+const PENDING = "PENDING";
+const FAILURE = "FAILURE";
+
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
       const {
         senderUserId,
         receiverUserId,
-        senderUserIp,
         amount,
         requiredAmount,
         transactionId,
@@ -20,13 +23,7 @@ const handle = async (req, res) => {
       } = await req.body;
 
       // check the received data
-      if (
-        !senderUserId ||
-        !receiverUserId ||
-        !senderUserIp ||
-        !amount ||
-        amount <= 0
-      ) {
+      if (!senderUserId || !receiverUserId || !amount || amount <= 0) {
         return res.status(400).json({
           status: "error",
           message: "Something went wrong",
@@ -57,37 +54,18 @@ const handle = async (req, res) => {
         });
       }
 
-      // check the user ip in db
-      const checkUserIp = await getUniqueData("IpWhitelist", {
-        userId: senderUser.id,
-        ipAddress: senderUserIp,
-      });
-      if (!checkUserIp) {
-        await logPaymentAttempt(
-          senderUser.id,
-          amount,
-          transactionId,
-          "FAILURE",
-          "User IP not found"
-        );
-        return res.status(404).json({
-          status: "error",
-          message: "User IP not found",
-        });
-      }
-
       // check the user role
       if (senderUser.role && senderUser.role === "ADMIN") {
         await logPaymentAttempt(
           senderUser.id,
           amount,
           transactionId,
-          "FAILURE",
-          "Admins cannot perform this action"
+          FAILURE,
+          "The action cannot be performed"
         );
         return res.status(403).json({
           status: "error",
-          message: "Admins are not allowed to perform this action",
+          message: "The action cannot be performed",
         });
       }
 
@@ -106,7 +84,7 @@ const handle = async (req, res) => {
           senderUser.id,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           "Daily payment limit exceeded"
         );
         return res.status(403).json({
@@ -122,7 +100,7 @@ const handle = async (req, res) => {
           senderUser.id,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           `The transaction amount is less than the required (${requiredAmount} TL).`
         );
         return res.status(403).json({
@@ -148,7 +126,7 @@ const handle = async (req, res) => {
           missingUserId,
           amount,
           transactionId,
-          "FAILURE",
+          FAILURE,
           missingUserMessage
         );
 
@@ -167,7 +145,7 @@ const handle = async (req, res) => {
           walletId: receiverUserWallet.id,
           type: "transfer",
           amount,
-          status: "PENDING",
+          status: PENDING,
           description: description || "Transfer transaction",
         });
 
@@ -190,7 +168,7 @@ const handle = async (req, res) => {
           receiverUser.id,
           amount,
           newTransaction.id,
-          "SUCCESS",
+          SUCCESS,
           `Money transfer to ${receiverUser.fullname} succeeded`
         );
 

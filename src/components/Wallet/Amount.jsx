@@ -72,10 +72,6 @@ export default function Amount({
       }
     }
   };
-  // SMS gönderme işlemi (Burada fake bir SMS kodu gönderiliyor)
-  const sendSms = () => {
-    console.log(`SMS ile gönderilen kod: ${generatedCode}`);
-  };
 
   // Kullanıcı IP'sini almak için ipify API'si
   const getUserIP = async () => {

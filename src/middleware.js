@@ -30,5 +30,5 @@ export default withAuth(async function middleware(req) {
 
 // config will be deleted later to make middleware work everywhere
 export const config = {
-  matcher: ["/api/payment", "/api/withdraw", "/api/transfer", "/wallet"],
+  matcher: ["/api/payment", "/api/withdraw", "/api/transfer"],
 };
