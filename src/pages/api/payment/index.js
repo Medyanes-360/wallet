@@ -20,7 +20,7 @@ const handle = async (req, res) => {
       // userId: to check whether the user exists or not
       // amount: to log the amount of money and make the process
       // transactionId: to idenify the payment process
-      // description: is not necessary, but if a user desires, they can leave a description for the paypment
+      // description: is not necessary, but if a user desires, they can leave a description for the payment
       const { userId, amount, transactionId, description } = await req.body;
 
       // check the received data
@@ -117,7 +117,6 @@ const handle = async (req, res) => {
 
       // Find the user's wallet
       const wallet = await getUniqueData("Wallet", { userId });
-
       if (!wallet) {
         await logPaymentAttempt(
           userId,
@@ -170,7 +169,7 @@ const handle = async (req, res) => {
 
       return res.status(200).json({
         status: "success",
-        message: "API request succeeded",
+        message: "yapılan işlem başarıyla tamamlandı.",
         data: result,
       });
     } catch (error) {

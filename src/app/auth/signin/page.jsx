@@ -197,74 +197,74 @@ export default function Page() {
       //         return false;
       //       }
 
-      //       let attempts = 3;
-      //       let isVerified = false;
-      //       while (attempts > 0 && !isVerified) {
-      //         const emailResult = await ipIsActiveNotification(res.message);
+            let attempts = 3;
+            let isVerified = false;
+            while (attempts > 0 && !isVerified) {
+              const emailResult = await ipIsActiveNotification(res.message);
 
-      //         if (emailResult.isConfirmed) {
-      //           const verificationOfEmailCode = await postAPI(
-      //             "/email/verify-code",
-      //             {
-      //               verificationCode: sendEmailCode,
-      //               userInput: emailResult.value,
-      //             }
-      //           )
-      //             .then((res) => {
-      //               if (res.status === 200 || res.status === "success") {
-      //                 console.log(res.message);
-      //                 return res.isVerified;
-      //               }
-      //             })
-      //             .catch((error) => {
-      //               console.log(error.message);
-      //               return false;
-      //             });
+              if (emailResult.isConfirmed) {
+                const verificationOfEmailCode = await postAPI(
+                  "/email/verify-code",
+                  {
+                    verificationCode: sendEmailCode,
+                    userInput: emailResult.value,
+                  }
+                )
+                  .then((res) => {
+                    if (res.status === 200 || res.status === "success") {
+                      console.log(res.message);
+                      return res.isVerified;
+                    }
+                  })
+                  .catch((error) => {
+                    console.log(error.message);
+                    return false;
+                  });
 
-      //           if (verificationOfEmailCode) {
-      //             Swal.fire(
-      //               "Onaylandı!",
-      //               "İşleminiz başarıyla tamamlandı.",
-      //               "success"
-      //             );
+                if (verificationOfEmailCode) {
+                  Swal.fire(
+                    "Onaylandı!",
+                    "İşleminiz başarıyla tamamlandı.",
+                    "success"
+                  );
 
-      //             isVerified = true;
-      //             const signInRes = await signIn("credentials", {
-      //               email: inputEmail,
-      //               password: inputPassword,
-      //               ipAddress: "95.91.246.240",
-      //               redirect: false,
-      //             });
-      //             if (signInRes?.error) throw new Error(signInRes.error);
-      //             router.push("/wallet");
-      //           } else {
-      //             attempts -= 1;
-      //             await Swal.fire({
-      //               title: "Hatalı Kod",
-      //               text: `Girdiğiniz kod yanlış. Kalan giriş hakkı: ${attempts}`,
-      //               icon: "error",
-      //               timer: 2000,
-      //               showConfirmButton: false,
-      //             });
-      //             await new Promise((resolve) => setTimeout(resolve, 10));
-      //           }
-      //         } else {
-      //           Swal.fire(
-      //             "İşlem İptal Edildi",
-      //             "Giriş işlemi iptal edildi.",
-      //             "error"
-      //           );
-      //           return false;
-      //         }
-      //       }
-      //       if (!isVerified) {
-      //         Swal.fire(
-      //           "İşlem Başarısız",
-      //           "3 defa yanlış kod girildiği için işlem iptal edildi.",
-      //           "error"
-      //         );
-      //         return false;
-      //       }
+                  isVerified = true;
+                  const signInRes = await signIn("credentials", {
+                    email: inputEmail,
+                    password: inputPassword,
+                    ipAddress: "95.91.246.240",
+                    redirect: false,
+                  });
+                  if (signInRes?.error) throw new Error(signInRes.error);
+                  router.push("/wallet");
+                } else {
+                  attempts -= 1;
+                  await Swal.fire({
+                    title: "Hatalı Kod",
+                    text: `Girdiğiniz kod yanlış. Kalan giriş hakkı: ${attempts}`,
+                    icon: "error",
+                    timer: 2000,
+                    showConfirmButton: false,
+                  });
+                  await new Promise((resolve) => setTimeout(resolve, 10));
+                }
+              } else {
+                Swal.fire(
+                  "İşlem İptal Edildi",
+                  "Giriş işlemi iptal edildi.",
+                  "error"
+                );
+                return false;
+              }
+            }
+            if (!isVerified) {
+              Swal.fire(
+                "İşlem Başarısız",
+                "3 defa yanlış kod girildiği için işlem iptal edildi.",
+                "error"
+              );
+              return false;
+            }
       //     } else if (res.isConfirmationRequired) {
       //       // new IP, no session
       //       const sendEmailCode = await postAPI("/email/send-code", {

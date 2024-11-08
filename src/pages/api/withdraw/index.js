@@ -4,20 +4,23 @@ import {
 } from "../../../services/serviceOperations";
 import logPaymentAttempt from "../../../services/logPaymentAttempt";
 
-const SUCCESS = "SUCCESS"
-const PENDING = "PENDING"
-const FAILURE = "FAILURE"
+const PENDING = "PENDING";
+const FAILURE = "FAILURE";
 
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
-      const { userId, transactionId, amount, description } =
-        await req.body;
+      // userId: to check whether the user exists or not
+      // amount: to log the amount of money and make the process
+      // transactionId: to idenify the payment process
+      // description: is not necessary, but if a user desires, they can leave a description for the payment
+      const { userId, amount, transactionId, description } = await req.body;
 
+      // check the received data
       if (!userId || amount <= 0 || !amount) {
         return res.status(400).json({
           status: "error",
-          message: "Invalid userId, userIp or amount",
+          message: "Invalid userId or amount",
         });
       }
 
@@ -52,6 +55,7 @@ const handle = async (req, res) => {
         });
       }
 
+      // Fetch logs made for payment attempts made by the user today
       const todayPaymentLogs = await getAllData("PaymentLog", {
         userId: user.id,
         timestamp: {
@@ -76,6 +80,7 @@ const handle = async (req, res) => {
         });
       }
 
+      // Find the user's wallet
       const wallet = await getUniqueData("Wallet", { userId });
       if (!wallet) {
         await logPaymentAttempt(
@@ -91,7 +96,7 @@ const handle = async (req, res) => {
         });
       }
 
-      const transaction = await prisma.$transaction(async () => {
+      const withdraw = await prisma.$transaction(async () => {
         // Record the transaction
         const newTransaction = await createNewData("Transaction", {
           id: transactionId,
@@ -116,9 +121,9 @@ const handle = async (req, res) => {
 
       return res.status(200).json({
         status: "success",
-        message: "API request succeedeed",
+        message: "yapılan sorgu başarıyla gönderildi.",
         data: {
-          transaction,
+          withdraw,
           //? Gotta decide who admin should get withdraw req. from DB or as an API req?
           isVerified: true,
         },

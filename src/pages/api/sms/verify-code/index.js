@@ -12,18 +12,18 @@ const handle = async (req, res) => {
         });
       }
 
-      if (verificationCode.trim() === userInput.trim()) {
-        return res.status(200).json({
-          status: "success",
-          isVerified: true,
-          message: "Verification code matches.",
+      if (verificationCode.trim() !== userInput.trim()) {
+        return res.status(403).json({
+          status: "error",
+          isVerified: false,
+          message: "Doğrulama kodu eşleşmiyor.",
         });
       }
-
-      return res.status(403).json({
-        status: "error",
-        isVerified: false,
-        message: "Verification code does not match.",
+      
+      return res.status(200).json({
+        status: "success",
+        isVerified: true,
+        message: "Doğrulama kodu eşleşiyor.",
       });
     } catch (error) {
       return res.status(500).json({

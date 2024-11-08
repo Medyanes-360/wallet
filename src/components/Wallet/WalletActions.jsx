@@ -52,6 +52,7 @@ export default function WalletActions({setPage}) {
       amount: "-1000.00",
     },
   ];
+
   const Balance = () => {
     return (
       <div className="text-center">

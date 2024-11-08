@@ -19,11 +19,11 @@ model User {
   isVerified        Boolean   @default(false) // For email verification
   isBlocked         Boolean   @default(false) // To block suspicious accounts
   role              UserRole  @default(USER) // User role (USER, ADMIN, etc.)
-  dailyPaymentLimit Int       @default(3)
+  dailyPaymentLimit Int       @default(5)
 
-  wallet   Wallet? @relation(fields: [walletId], references: [id])
   walletId String? @unique @db.ObjectId
 
+  wallet       Wallet?       @relation(fields: [walletId], references: [id])
   bankAccounts BankAccount[] // Relation to bank accounts owned by the user
   transactions Transaction[] // Relation to transactions made by the user
   paymentLogs  PaymentLog[] // Relation to payment logs made by the user
@@ -54,7 +54,7 @@ model Transaction {
   updatedAt   DateTime @updatedAt
   description String?
 
-  PaymentLog PaymentLog?
+  PaymentLog PaymentLog? //Transaction can exist without log, but the log cannot be created without transactionId to refer to it
   Wallet     Wallet      @relation(fields: [walletId], references: [id])
   User       User?       @relation(fields: [userId], references: [id])
 }
@@ -113,3 +113,6 @@ enum PaymentType {
   WITHDRAW
   TRANSFER
 }
+
+//? How to establish user & wallet & transaction relation
+//? Should we have a user & transaction relation, or should this relation be only between wallet and transaction, since there is already a 1-1 relation between user and wallet

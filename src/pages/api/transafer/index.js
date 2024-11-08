@@ -14,34 +14,34 @@ const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
       const {
-        senderUserId,
-        receiverUserId,
-        amount,
-        requiredAmount,
-        transactionId,
-        description,
+        senderUserId,  // userEmail: to check whether the user exists or not
+        receiverUserEmail, // receiverUserEmail: to check whether the user exists or not
+        amount,  // amount: to log the amount of money and make the process
+        requiredAmount,  // this is a required amount that the receiverUser set
+        transactionId,  // transactionId: to idenify the payment process
+        description,  // description: is not necessary, but if a user desires, they can leave a description for the paypment
       } = await req.body;
 
       // check the received data
-      if (!senderUserId || !receiverUserId || !amount || amount <= 0) {
+      if (!senderUserId || !receiverUserEmail || !amount || amount <= 0) {
         return res.status(400).json({
           status: "error",
           message: "Something went wrong",
         });
       }
 
+      // check the users data in db
       const [senderUser, receiverUser] = await Promise.all([
         getUniqueData("User", { id: senderUserId }),
-        getUniqueData("User", { id: receiverUserId }),
+        getUniqueData("User", { email: receiverUserEmail }),
       ]);
-
       if (!senderUser || !receiverUser) {
-        const missingUserId = !senderUser ? senderUserId : receiverUserId;
+        const missingUser = !senderUser ? senderUserId : receiverUserEmail;
         const missingUserMessage = !senderUser
           ? "senderUser not found"
           : "receiverUser not found";
         await logPaymentAttempt(
-          missingUserId,
+          missingUser,
           amount,
           transactionId,
           "FAILURE",
@@ -54,7 +54,7 @@ const handle = async (req, res) => {
         });
       }
 
-      // check the user role
+      // check the users role
       if (senderUser.role && senderUser.role === "ADMIN") {
         await logPaymentAttempt(
           senderUser.id,
@@ -69,6 +69,7 @@ const handle = async (req, res) => {
         });
       }
 
+      // Fetch logs made for payment attempts made by the user today
       const todayPaymentLogs = await getAllData("PaymentLog", {
         userId: senderUser.id,
         timestamp: {
@@ -95,6 +96,7 @@ const handle = async (req, res) => {
 
       //? SHOULD I ADD CONDITION FOR EXCEEDED MONEY?
       // Check maximum allowed payment amount
+      // Do we need required or not
       if (amount < requiredAmount) {
         await logPaymentAttempt(
           senderUser.id,
@@ -111,10 +113,9 @@ const handle = async (req, res) => {
 
       // Find the relevant wallet
       const [senderUserWallet, receiverUserWallet] = await Promise.all([
-        getUniqueData("Wallet", { userId: senderUserId }),
-        getUniqueData("Wallet", { userId: receiverUserId }),
+        getUniqueData("Wallet", { userId: senderUser.id }),
+        getUniqueData("Wallet", { userId: receiverUser.id }),
       ]);
-
       if (!senderUserWallet || !receiverUserWallet) {
         const missingUserId = !senderUserWallet
           ? senderUser.id
@@ -141,8 +142,8 @@ const handle = async (req, res) => {
         // Record the transaction
         const newTransaction = await createNewData("Transaction", {
           id: transactionId,
-          userId: receiverUserId,
-          walletId: receiverUserWallet.id,
+          userId: senderUser.id,
+          walletId: senderUserWallet.id,
           type: "transfer",
           amount,
           status: PENDING,
@@ -165,7 +166,7 @@ const handle = async (req, res) => {
 
         // If everything is alright, make a log of the payment
         await logPaymentAttempt(
-          receiverUser.id,
+          senderUser.id,
           amount,
           newTransaction.id,
           SUCCESS,
