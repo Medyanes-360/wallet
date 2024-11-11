@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import { FormErrorMessage } from "../../../components/ui/FormErrorMessage";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { fireSmsNotification } from "../../../swal";
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -36,98 +37,101 @@ const ipIsBlockedNotification = (message) => {
 };
 
 const ipIsActiveNotification = async (message) => {
+  return fireSmsNotification("A user detected",message)
   // There is already a user in the session
-  let timerInterval; // Declare timerInterval outside the Swal configuration
-  let timeLeft = 60; // Initialize timeLeft with 60 seconds
+  // let timerInterval; // Declare timerInterval outside the Swal configuration
+  // let timeLeft = 60; // Initialize timeLeft with 60 seconds
 
-  return Swal.fire({
-    title: "A user detected",
-    html: `
-        <p>${message}:</p>
-        <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
-        <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
-      `,
-    showCancelButton: true,
-    confirmButtonText: "Onayla",
-    cancelButtonText: "İptal et",
-    didOpen: () => {
-      const timerElement = Swal.getHtmlContainer().querySelector("#timer");
+  // return Swal.fire({
+  //   title: "A user detected",
+  //   html: `
+  //       <p>${message}:</p>
+  //       <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
+  //       <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
+  //     `,
+  //   showCancelButton: true,
+  //   confirmButtonText: "Onayla",
+  //   cancelButtonText: "İptal et",
+  //   didOpen: () => {
+  //     const timerElement = Swal.getHtmlContainer().querySelector("#timer");
 
-      if (timerElement) {
-        // Check if the timer element exists
-        timerInterval = setInterval(() => {
-          timeLeft -= 1;
-          timerElement.textContent = timeLeft;
+  //     if (timerElement) {
+  //       // Check if the timer element exists
+  //       timerInterval = setInterval(() => {
+  //         timeLeft -= 1;
+  //         timerElement.textContent = timeLeft;
 
-          if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            Swal.close();
-            Swal.fire(
-              "Süre Doldu",
-              "İşlem süresi dolduğu için iptal edildi.",
-              "error"
-            );
-          }
-        }, 1000);
-      } else {
-        console.error("Timer element not found!");
-      }
-    },
-    willClose: () => {
-      clearInterval(timerInterval); // Clear the interval to avoid memory leaks
-    },
-    preConfirm: () => {
-      const inputCode = Swal.getPopup().querySelector("#smsCodeInput").value;
-      if (!inputCode) {
-        Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
-      }
-      return inputCode;
-    },
-  });
+  //         if (timeLeft <= 0) {
+  //           clearInterval(timerInterval);
+  //           Swal.close();
+  //           Swal.fire(
+  //             "Süre Doldu",
+  //             "İşlem süresi dolduğu için iptal edildi.",
+  //             "error"
+  //           );
+  //         }
+  //       }, 1000);
+  //     } else {
+  //       console.error("Timer element not found!");
+  //     }
+  //   },
+  //   willClose: () => {
+  //     clearInterval(timerInterval); // Clear the interval to avoid memory leaks
+  //   },
+  //   preConfirm: () => {
+  //     const inputCode = Swal.getPopup().querySelector("#smsCodeInput").value;
+  //     if (!inputCode) {
+  //       Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
+  //     }
+  //     return inputCode;
+  //   },
+  // });
 };
 
 const ipConfirmationNotification = async (message) => {
-  let timerInterval;
-  let timeLeft = 60;
+  return fireSmsNotification("A new IP has been detected",message)
 
-  return Swal.fire({
-    title: "A new IP has been detected",
-    html: `
-        <p>${message}:</p>
-        <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
-        <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
-      `,
-    showCancelButton: true,
-    confirmButtonText: "Onayla",
-    cancelButtonText: "İptal et",
-    didOpen: () => {
-      const timerElement = Swal.getHtmlContainer().querySelector("#timer");
-      timerInterval = setInterval(() => {
-        timeLeft -= 1;
-        timerElement.textContent = timeLeft;
+  // let timerInterval;
+  // let timeLeft = 60;
 
-        if (timeLeft === 0) {
-          clearInterval(timerInterval);
-          Swal.close();
-          Swal.fire(
-            "Süre Doldu",
-            "İşlem süresi dolduğu için iptal edildi.",
-            "error"
-          );
-        }
-      }, 1000);
-    },
-    willClose: () => {
-      clearInterval(timerInterval);
-    },
-    preConfirm: () => {
-      const inputCode = Swal.getPopup().querySelector("#smsCodeInput").value;
-      if (!inputCode) {
-        Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
-      }
-      return inputCode;
-    },
-  });
+  // return Swal.fire({
+  //   title: "A new IP has been detected",
+  //   html: `
+  //       <p>${message}:</p>
+  //       <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
+  //       <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
+  //     `,
+  //   showCancelButton: true,
+  //   confirmButtonText: "Onayla",
+  //   cancelButtonText: "İptal et",
+  //   didOpen: () => {
+  //     const timerElement = Swal.getHtmlContainer().querySelector("#timer");
+  //     timerInterval = setInterval(() => {
+  //       timeLeft -= 1;
+  //       timerElement.textContent = timeLeft;
+
+  //       if (timeLeft === 0) {
+  //         clearInterval(timerInterval);
+  //         Swal.close();
+  //         Swal.fire(
+  //           "Süre Doldu",
+  //           "İşlem süresi dolduğu için iptal edildi.",
+  //           "error"
+  //         );
+  //       }
+  //     }, 1000);
+  //   },
+  //   willClose: () => {
+  //     clearInterval(timerInterval);
+  //   },
+  //   preConfirm: () => {
+  //     const inputCode = Swal.getPopup().querySelector("#smsCodeInput").value;
+  //     if (!inputCode) {
+  //       Swal.showValidationMessage(`Lütfen SMS kodunu girin`);
+  //     }
+  //     return inputCode;
+  //   },
+  // });
 };
 
 export default function Page() {
@@ -196,10 +200,11 @@ export default function Page() {
       //         Swal.fire("Hata", "Email kodu gönderilemedi.", "error");
       //         return false;
       //       }
-
+      // burası çalışıyor mu?
             let attempts = 3;
             let isVerified = false;
             while (attempts > 0 && !isVerified) {
+              // res returns  not defined. this dosent work
               const emailResult = await ipIsActiveNotification(res.message);
 
               if (emailResult.isConfirmed) {

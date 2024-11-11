@@ -22,7 +22,7 @@ export default function Amount({
   const { data: session } = useSession();
   const userData = session.user;
   const dailyPaymentLimit = userData.dailyPaymentLimit;
-
+  // amount olarak girilebilecek değerleri kontrol eder
   const handleChange = (event) => {
     const value = event.target.value;
 
@@ -38,6 +38,7 @@ export default function Amount({
       event.preventDefault();
     }
   };
+  // --------------------------------------------------
   // Bakiye ekleme fonksiyonu
   const addBalance = async (amount) => {
     if (amount) {
