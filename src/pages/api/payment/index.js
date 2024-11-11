@@ -132,7 +132,7 @@ const handle = async (req, res) => {
       }
 
       // Perform the transaction atomically to avoid partial updates
-      const result = await prisma.$transaction(async () => {
+      const deposit = await prisma.$transaction(async () => {
         // Record the transaction
         const newTransaction = await createNewData("Transaction", {
           id: transactionId,
@@ -170,7 +170,7 @@ const handle = async (req, res) => {
       return res.status(200).json({
         status: "success",
         message: "yapılan işlem başarıyla tamamlandı.",
-        data: result,
+        data: deposit,
       });
     } catch (error) {
       return res.status(500).json({

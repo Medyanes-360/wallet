@@ -111,7 +111,7 @@ const handle = async (req, res) => {
         await logPaymentAttempt(
           userId,
           amount,
-          transactionId,
+          newTransaction.id,
           PENDING,
           "Withdraw request made"
         );
@@ -122,11 +122,7 @@ const handle = async (req, res) => {
       return res.status(200).json({
         status: "success",
         message: "yapılan sorgu başarıyla gönderildi.",
-        data: {
-          withdraw,
-          //? Gotta decide who admin should get withdraw req. from DB or as an API req?
-          isVerified: true,
-        },
+        data: { withdraw },
       });
     } catch (error) {
       return res.status(500).json({

@@ -13,12 +13,13 @@ export default async function middleware(req) {
   const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   // If no session exists, rewrite the request to the signin page
+  //? redirect to the main page
   if (!session) {
     return NextResponse.rewrite(`${baseUrl}/auth/signin`);
   }
 
-  // Restrict access to "/admin" pages and API routes if the user's role is "USER"
-  if (session.role === "USER" && currentPath.startsWith("/admin") || currentPath.startsWith("/api")) {
+  // Restrict access to "/admin" pages if the user's role is "USER"
+  if (session.role === "USER" && currentPath.startsWith("/admin")) {
     return NextResponse.rewrite(`${baseUrl}/`); // Rewrite to the home page
   }
 

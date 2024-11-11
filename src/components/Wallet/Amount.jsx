@@ -49,7 +49,7 @@ export default function Amount({
         if (!riskStatus) return;
 
         const transactionId = uuidv4();
-        await postAPI("/payment", {
+        postAPI("/payment", {
           userId: userData.id,
           amount,
           transactionId,
@@ -120,6 +120,7 @@ export default function Amount({
                   "Failed withdrawal:",
                   res?.message || "Unknown error"
                 );
+                console.log(res)
                 return Swal.fire({
                   title: `Para çekme işlemi hata`,
                   text: `${res?.message ? res.message : "Bilinmeyen hata"}`,
