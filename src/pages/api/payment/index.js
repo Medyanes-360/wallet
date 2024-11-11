@@ -71,7 +71,10 @@ const handle = async (req, res) => {
       });
 
       // Check daily payment limit, if it's more than the user can make in one day, we send an error
-      if (todayPaymentLogs.length >= user.dailyPaymentLimit) {
+      if (
+        todayPaymentLogs &&
+        todayPaymentLogs.length >= user.dailyPaymentLimit
+      ) {
         await logPaymentAttempt(
           userId,
           amount,

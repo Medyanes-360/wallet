@@ -1,8 +1,10 @@
 import {
   createNewData,
   getUniqueData,
+  getAllData
 } from "../../../services/serviceOperations";
 import logPaymentAttempt from "../../../services/logPaymentAttempt";
+import prisma from "../../../../prisma";
 
 const PENDING = "PENDING";
 const FAILURE = "FAILURE";
@@ -17,7 +19,7 @@ const handle = async (req, res) => {
       const { userId, amount, transactionId, description } = await req.body;
 
       // check the received data
-      if (!userId || amount <= 0 || !amount) {
+      if (!userId || !amount || amount <= 0) {
         return res.status(400).json({
           status: "error",
           message: "Invalid userId or amount",
@@ -34,10 +36,9 @@ const handle = async (req, res) => {
           FAILURE,
           "User not found"
         );
-        return res.status(404).json({
-          status: "error",
-          message: "User not found",
-        });
+        return res
+          .status(404)
+          .json({ status: "error", message: "User not found" });
       }
 
       // check the user role
@@ -65,10 +66,13 @@ const handle = async (req, res) => {
       });
 
       //? Çünkü max günlük işlem sayısında başarısız işlemleri de saymalıyız
-      // Check daily payment limit
-      if (todayPaymentLogs.length >= user.dailyPaymentLimit) {
+      // Check daily payment limit, if it's more than the user can make in one day, we send an error
+      if (
+        todayPaymentLogs &&
+        todayPaymentLogs.length >= user.dailyPaymentLimit
+      ) {
         await logPaymentAttempt(
-          user.id,
+          userId,
           amount,
           transactionId,
           FAILURE,
@@ -101,7 +105,7 @@ const handle = async (req, res) => {
         const newTransaction = await createNewData("Transaction", {
           id: transactionId,
           userId,
-          wallet: wallet.id,
+          walletId: wallet.id,
           type: "withdraw",
           amount,
           status: PENDING,
