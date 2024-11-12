@@ -99,6 +99,20 @@ const handle = async (req, res) => {
           message: "Wallet not found for the user",
         });
       }
+      // Ensure the wallet has enough funds to cover the requested amount
+      if(amount > wallet.balance) {
+        await logPaymentAttempt(
+          userId,
+          amount,
+          transactionId,
+          FAILURE,
+          `Insufficient funds in wallet`
+        );
+        return res.status(400).json({
+          status: "error",
+          message: "Insufficient funds in wallet",
+        });
+      }
 
       const withdraw = await prisma.$transaction(async () => {
         // Record the transaction
