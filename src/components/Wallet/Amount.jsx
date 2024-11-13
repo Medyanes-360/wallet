@@ -5,6 +5,7 @@ import { RiArrowRightWideLine, RiArrowLeftWideLine } from "react-icons/ri";
 import { postAPI } from "../../services/fetchAPI";
 import { v4 as uuidv4 } from "uuid";
 import { useSession } from "next-auth/react";
+import hashPaymentData from "../../services/hashPaymentData";
 
 export default function Amount({
   amount,
@@ -18,7 +19,7 @@ export default function Amount({
   const [minAmount, setMinAmount] = useState(250);
   const [riskAmount, setRiskAmount] = useState(10000); // Onay gerektiren para miktarı
   const [processAmount, setProcessAmount] = useState(0); // giriş yapmış kullanıcıdan alacağımız o gün yaptığı işlem sayısı
- 
+
   const { data: session } = useSession();
   const userData = session.user;
   const dailyPaymentLimit = userData.dailyPaymentLimit;
@@ -50,12 +51,15 @@ export default function Amount({
         if (!riskStatus) return;
 
         const transactionId = uuidv4();
-        postAPI("/payment", {
+        const paymentData = {
           userId: userData.id,
           amount,
           transactionId,
           description: "My new payment",
-        })
+        };
+        const encrypedData = hashPaymentData(paymentData, "enc");
+
+        postAPI("/payment", { ...encrypedData })
           .then((res) => {
             if (res.status === 200 || res.status === "success") {
               console.log(res.data);
@@ -72,7 +76,7 @@ export default function Amount({
               return Swal.fire({
                 title: `Para yatırma işlemi hata`,
                 text: `${res?.message ? res.message : "Bilinmeyen hata"}`,
-                icon: "Warning",
+                icon: "warning",
                 confirmButtonText: "Tamam",
                 timer: 5000,
                 timerProgressBar: true,
@@ -99,12 +103,14 @@ export default function Amount({
           if (!riskStatus) return;
 
           const transactionId = uuidv4();
-          postAPI("/withdraw", {
+          const paymentData = {
             userId: userData.id,
             amount,
             transactionId,
-            description: "My new withdraw",
-          })
+            description: "My new payment",
+          };
+          const encrypedData = hashPaymentData(paymentData, "enc");
+          postAPI("/withdraw", {...encrypedData})
             .then((res) => {
               if (res?.status === 200 || res?.status === "success") {
                 console.log(res?.data);
@@ -121,7 +127,7 @@ export default function Amount({
                   "Failed withdrawal:",
                   res?.message || "Unknown error"
                 );
-                console.log(res)
+                console.log(res);
                 return Swal.fire({
                   title: `Para çekme işlemi hata`,
                   text: `${res?.message ? res.message : "Bilinmeyen hata"}`,

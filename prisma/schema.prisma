@@ -32,13 +32,13 @@ model User {
 }
 
 model Wallet {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @unique @db.ObjectId
-  balance     Float    @default(0.0)
-  currency    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  isInProcess Boolean  @default(false)
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @unique @db.ObjectId
+  balance   Float    @default(0.0)
+  currency  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // isInProcess Boolean  @default(false)
 
   User        User?
   Transaction Transaction[]

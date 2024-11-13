@@ -5,6 +5,7 @@ import {
 } from "../../../services/serviceOperations";
 import logPaymentAttempt from "../../../services/logPaymentAttempt";
 import prisma from "../../../../prisma";
+import hashPaymentData from "../../../services/hashPaymentData";
 
 const PENDING = "PENDING";
 const FAILURE = "FAILURE";
@@ -16,7 +17,12 @@ const handle = async (req, res) => {
       // amount: to log the amount of money and make the process
       // transactionId: to idenify the payment process
       // description: is not necessary, but if a user desires, they can leave a description for the payment
-      const { userId, amount, transactionId, description } = await req.body;
+      const paymentData = await req.body;
+       // decrypted the encrypted retrieved data
+      const decryptedData = hashPaymentData(paymentData, "dec");
+      const { userId, amount, transactionId, description } = decryptedData
+      // parse the amount to number which is string
+      const parsedAmount = parseFloat(amount);
 
       // check the received data
       if (!userId || !amount || amount <= 0) {
@@ -31,7 +37,7 @@ const handle = async (req, res) => {
       if (!user) {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           "User not found"
@@ -45,7 +51,7 @@ const handle = async (req, res) => {
       if (user.role && user.role === "ADMIN") {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           "The action cannot be performed"
@@ -73,7 +79,7 @@ const handle = async (req, res) => {
       ) {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           "Daily payment limit exceeded"
@@ -89,7 +95,7 @@ const handle = async (req, res) => {
       if (!wallet) {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           `Wallet not found for the user`
@@ -100,10 +106,10 @@ const handle = async (req, res) => {
         });
       }
       // Ensure the wallet has enough funds to cover the requested amount
-      if(amount > wallet.balance) {
+      if(parsedAmount > wallet.balance) {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           `Insufficient funds in wallet`
@@ -121,14 +127,14 @@ const handle = async (req, res) => {
           userId,
           walletId: wallet.id,
           type: "withdraw",
-          amount,
+          amount: parsedAmount,
           status: PENDING,
           description: description || "Money withdrawal",
         });
 
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           newTransaction.id,
           PENDING,
           "Withdraw request made"

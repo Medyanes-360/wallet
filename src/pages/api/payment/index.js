@@ -1,4 +1,5 @@
 import prisma from "../../../../prisma";
+import hashPaymentData from "../../../services/hashPaymentData";
 import logPaymentAttempt from "../../../services/logPaymentAttempt";
 import {
   createNewData,
@@ -21,7 +22,12 @@ const handle = async (req, res) => {
       // amount: to log the amount of money and make the process
       // transactionId: to idenify the payment process
       // description: is not necessary, but if a user desires, they can leave a description for the payment
-      const { userId, amount, transactionId, description } = await req.body;
+      const paymentData = await req.body;
+      // decrypted the encrypted retrieved data
+      const decryptedData = hashPaymentData(paymentData, "dec");
+      const { userId, amount, transactionId, description } = decryptedData;
+      // parse the amount to number which is string
+      const parsedAmount = parseFloat(amount);
 
       // check the received data
       if (!userId || !amount || amount <= 0) {
@@ -36,7 +42,7 @@ const handle = async (req, res) => {
       if (!user) {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           "User not found"
@@ -50,7 +56,7 @@ const handle = async (req, res) => {
       if (user.role && user.role === "ADMIN") {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           "The action cannot be performed"
@@ -77,7 +83,7 @@ const handle = async (req, res) => {
       ) {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           "Daily payment limit exceeded"
@@ -89,10 +95,10 @@ const handle = async (req, res) => {
       }
 
       // Check maximum allowed payment amount, if it excels the max amount, send an error message
-      if (amount > MAX_AMOUNT) {
+      if (parsedAmount > MAX_AMOUNT) {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           `Maximum transaction amount exceeded (Limit: ${MAX_AMOUNT} TL)`
@@ -104,10 +110,10 @@ const handle = async (req, res) => {
       }
 
       // Check minimum allowed payment amount, if it fall short the min amount, send an error message
-      if (amount < MIN_AMOUNT) {
+      if (parsedAmount < MIN_AMOUNT) {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           `Minimum transaction amount (Minimum: ${MIN_AMOUNT} TL)`
@@ -123,7 +129,7 @@ const handle = async (req, res) => {
       if (!wallet) {
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           transactionId,
           FAILURE,
           `Wallet not found for the user`
@@ -142,7 +148,7 @@ const handle = async (req, res) => {
           userId,
           walletId: wallet.id,
           type: "payment",
-          amount,
+          amount: parsedAmount,
           status: PENDING,
           description: description || "Payment transaction",
         });
@@ -153,7 +159,7 @@ const handle = async (req, res) => {
           { id: wallet.id },
           {
             balance: {
-              increment: amount, // Use Prisma's increment to avoid race conditions
+              increment: parsedAmount, // Use Prisma's increment to avoid race conditions
             },
           }
         );
@@ -161,7 +167,7 @@ const handle = async (req, res) => {
         // If everything is alright, make a log of the payment
         await logPaymentAttempt(
           userId,
-          amount,
+          parsedAmount,
           newTransaction.id,
           SUCCESS,
           "Making a request for payment"
