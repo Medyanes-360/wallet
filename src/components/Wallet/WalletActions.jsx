@@ -1,57 +1,46 @@
 "use client";
 import { GrTransaction } from "react-icons/gr";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CardMain from "./CardMain";
 
 import ActionStep from "./ActionStep";
 import Amount from "./Amount";
 import TransactionItem from "./TransactionItem";
+import { postAPI } from "../../services/fetchAPI";
+import { useSession } from "next-auth/react";
 
-export default function WalletActions({setPage}) {
+export default function WalletActions({ setPage }) {
   const [showSelectedAction, setShowSelecetedAction] = useState(""); //deposit/withdraw
   const [amount, setAmount] = useState("");
   const [ifSavedCardUsed, setIfSavedCardUsed] = useState(false);
+  const [wallet, setWallet] = useState(null);
+  const [transactions, setTransactions] = useState([]);
 
   const [actionStep, setActionStep] = useState(0); // işlem basamağı
 
-  const testTransactions = [
-    {
-      title: "Harcama",
-      subtitle: "subtitle",
-      date: "10 Eylül",
-      amount: "-500.00",
-    },
-    {
-      title: "Yükleme",
-      subtitle: "subtitl2e",
-      date: "10 2Eylül",
-      amount: "+2000.00",
-    },
-    {
-      title: "Çekme",
-      subtitle: "subtitle3",
-      date: "10 Eylül3",
-      amount: "-3000.00",
-    },
-    {
-      title: "Harcama",
-      subtitle: "subtitle",
-      date: "10 Ekim",
-      amount: "-620.00",
-    },
-    {
-      title: "Yükleme",
-      subtitle: "subtitl2e",
-      date: "10 Ağustos",
-      amount: "+5000.00",
-    },
-    {
-      title: "Çekme",
-      subtitle: "subtitle3",
-      date: "10 Aralık",
-      amount: "-1000.00",
-    },
-  ];
+  const { data: session } = useSession();
+  const userData = session.user;
+
+  const getWalletData = () => {
+    if (!wallet && !transactions.length) {
+      postAPI("/wallet", { userId: userData.id })
+        .then((res) => {
+          if (res.status === 200 || res.status === "success") {
+            setWallet(res.data.wallet);
+            setTransactions(res.data.transactions);
+          } else {
+            console.log(res.message);
+          }
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
+    }
+  };
+
+  useEffect(() => {
+    getWalletData();
+  }, [userData.id, actionStep]);
 
   const Balance = () => {
     return (
@@ -59,7 +48,9 @@ export default function WalletActions({setPage}) {
         <h2 className="text-xl font-semibold text-purple-800">
           Cüzdan Bakiyem
         </h2>
-        <div className="text-5xl font-bold mt-2 text-purple-900">0 TL</div>
+        <div className="text-5xl font-bold mt-2 text-purple-900">
+          {wallet?.balance} {wallet?.currency}
+        </div>
         <div className="text-xs text-gray-500 mt-1">
           Hesap numarası: 32507319
         </div>
@@ -75,7 +66,7 @@ export default function WalletActions({setPage}) {
               setShowSelecetedAction("deposit");
               setActionStep(1);
             }}
-            className="bg-purple-600 text-white p-3 rounded-lg   shadow "
+            className="bg-purple-600 text-white p-3 rounded-lg shadow "
           >
             <svg
               width="24"
@@ -117,14 +108,21 @@ export default function WalletActions({setPage}) {
       <div className="mt-10 mx-auto max-w-xl ">
         <div className="flex justify-between">
           <h3 className="font-semibold text-lg text-black">Son İşlemlerim</h3>
-          <button onClick={()=>setPage("transactions")} className="underline decoration-1 text-purple-900">
+          <button
+            onClick={() => setPage("transactions")}
+            className="underline decoration-1 text-purple-900"
+          >
             Tümü
           </button>
         </div>
         <ul className="mt-4 shadow border rounded-lg divide-y">
           {/** aşağıdaki slice işlemi son 4 işlemi alıyor eğer 4<= ise hepsini yazıyor */}
-          {testTransactions.slice(-4).map((item,index) => (
-            <TransactionItem key={`${index}-${item.title}`} transactionData={item} />
+          {transactions.slice(-4).reverse().map((item, index) => (
+            <TransactionItem
+              key={`${index}-${item.title}`}
+              transactionData={item}
+              currency={wallet.currency}
+            />
           ))}
         </ul>
       </div>
@@ -132,7 +130,7 @@ export default function WalletActions({setPage}) {
   };
 
   return (
-    <div className="md:p-6 md:pb-10 py-5 px-2  bg-white rounded-lg md:shadow-md">
+    <div className="md:p-6 md:pb-10 py-5 px-2 bg-white rounded-lg md:shadow-md">
       {actionStep === 0 ? (
         <div>
           <Balance />
@@ -142,6 +140,7 @@ export default function WalletActions({setPage}) {
       ) : actionStep === 1 ? (
         <div>
           <CardMain
+            userData={userData}
             ifSavedCardUsed={ifSavedCardUsed}
             setIfSavedCardUsed={setIfSavedCardUsed}
             showSelectedAction={showSelectedAction}
@@ -152,12 +151,14 @@ export default function WalletActions({setPage}) {
         <div>
           {showSelectedAction === "deposit" ? (
             <ActionStep
+              userData={userData}
               setActionStep={setActionStep}
               setIfSavedCardUsed={setIfSavedCardUsed}
               actionType={"deposit"}
             />
           ) : (
             <ActionStep
+              userData={userData}
               setActionStep={setActionStep}
               setIfSavedCardUsed={setIfSavedCardUsed}
               actionType={"withdraw"}
@@ -172,6 +173,7 @@ export default function WalletActions({setPage}) {
           showSelectedAction={showSelectedAction}
           setActionStep={setActionStep}
           amount={amount}
+          
         />
       ) : (
         ""

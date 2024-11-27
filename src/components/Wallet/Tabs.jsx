@@ -2,8 +2,7 @@
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 
-export default function Tabs() {
-  const [selected, setSelected] = useState("Tümü");
+export default function Tabs({selected, setSelected}) {
   const containerRef = useRef(null);
   const [tabWidth, setTabWidth] = useState(0);
 

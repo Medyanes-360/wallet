@@ -147,10 +147,10 @@ const handle = async (req, res) => {
           id: transactionId,
           userId,
           walletId: wallet.id,
-          type: "payment",
+          type: "deposit",
           amount: parsedAmount,
           status: PENDING,
-          description: description || "Payment transaction",
+          description: description || "No description provided",
         });
 
         // Update the wallet balance safely

@@ -1,13 +1,41 @@
+"use client";
 import { RiArrowLeftWideLine, RiArrowRightWideLine } from "react-icons/ri";
 import CardItem from "./CardItem";
 import { HiOutlineCreditCard } from "react-icons/hi";
+import { useEffect, useState } from "react";
+import { postAPI } from "../../services/fetchAPI";
 
 export default function CardMain({
+  userData,
   showSelectedAction,
   updateActionStep,
   setIfSavedCardUsed,
   ifSavedCardUsed,
 }) {
+  const [bankAccounts, setBankAccounts] = useState([]);
+
+  useEffect(() => {
+    getBankAccounts();
+  }, [userData.id]);
+
+  function getBankAccounts() {
+    if (!bankAccounts.length) {
+      postAPI("/bank-account/get-bank-account", {
+        userId: userData.id,
+      })
+        .then((res) => {
+          if (res.status === 200 || res.status === "success") {
+            setBankAccounts(res.data);
+          } else {
+            console.log(res.message);
+          }
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
+    }
+  }
+
   return (
     <div className="w-full md:w-3/4">
       <div className="flex gap-x-3">
@@ -25,13 +53,13 @@ export default function CardMain({
       </div>
       <div className="flex flex-col gap-y-5 mt-10">
         <ul className="space-y-2">
-          {[1, 2, 3].map((i) => (
+          {bankAccounts?.map((card) => (
             <CardItem
               ifSavedCardUsed={ifSavedCardUsed}
               setIfSavedCardUsed={setIfSavedCardUsed}
               setActionStep={updateActionStep}
-              key={i}
-              i={i}
+              key={card.id}
+              card={card}
             />
           ))}
         </ul>

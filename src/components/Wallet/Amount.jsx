@@ -19,6 +19,7 @@ export default function Amount({
   const [minAmount, setMinAmount] = useState(250);
   const [riskAmount, setRiskAmount] = useState(10000); // Onay gerektiren para miktarı
   const [processAmount, setProcessAmount] = useState(0); // giriş yapmış kullanıcıdan alacağımız o gün yaptığı işlem sayısı
+  const [paymentDescription, setPaymentDescription] = useState("")
 
   const { data: session } = useSession();
   const userData = session.user;
@@ -55,7 +56,7 @@ export default function Amount({
           userId: userData.id,
           amount,
           transactionId,
-          description: "My new payment",
+          description: paymentDescription,
         };
         const encrypedData = hashPaymentData(paymentData, "enc");
 
@@ -63,6 +64,8 @@ export default function Amount({
           .then((res) => {
             if (res.status === 200 || res.status === "success") {
               console.log(res.data);
+              setAmount("")
+              setPaymentDescription("")
               return Swal.fire({
                 title: `Para yatırma işlemi`,
                 text: `${amount} TL için ${res.message}`,
@@ -232,7 +235,7 @@ export default function Amount({
             const smsResult = await Swal.fire({
               title: "SMS Onayı Gerekli",
               html: `
-                <p>${riskAmount} TL'nin üzerinde bir işlem yapıyorsunuz.</p>
+                <p>${amount} TL'nin üzerinde bir işlem yapıyorsunuz.</p>
                 <p>Lütfen SMS ile gönderilen kodu girin:</p>
                 <input type="text" id="smsCodeInput" class="swal2-input" placeholder="SMS Kodu" />
                 <p><strong>Kalan Süre: <span id="timer">60</span> saniye</strong></p>
@@ -250,11 +253,13 @@ export default function Amount({
                   if (timeLeft === 0) {
                     clearInterval(timerInterval);
                     Swal.close();
-                    Swal.fire(
-                      "Süre Doldu",
-                      "İşlem süresi dolduğu için iptal edildi.",
-                      "error"
-                    );
+                    Swal.fire({
+                      title: "Süre Doldu",
+                      text: "İşlem süresi dolduğu için iptal edildi.",
+                      icon: "error",
+                      timer: 2000, 
+                      showConfirmButton: false, 
+                    });
                   }
                 }, 1000);
               },
@@ -311,11 +316,13 @@ export default function Amount({
                 await new Promise((resolve) => setTimeout(resolve, 10));
               }
             } else {
-              Swal.fire(
-                "İşlem İptal Edildi",
-                "Yükleme işlemi iptal edildi.",
-                "error"
-              );
+              Swal.fire({
+                title: "Süre Doldu",
+                text: "İşlem süresi dolduğu için iptal edildi.",
+                icon: "error",
+                timer: 2000, 
+                showConfirmButton: false, 
+              });
               return false;
             }
           }
@@ -372,7 +379,7 @@ export default function Amount({
           onClick={() => {
             ifSavedCardUsed
               ? setActionStep((val) => val - 2)
-              : setActionStep((val) => val - 1);
+              : setActionStep((val) => val - 2);
             setIfSavedCardUsed(false);
           }}
         >
@@ -397,13 +404,13 @@ export default function Amount({
           onKeyDown={(event) => handleKeyDown(event)}
           placeholder="0"
           type="number"
-          className={`text-center p-3 w-1/2 border-black  border-b-2 flex justify-center items-baseline text-5xl font-medium outline-none ${
+          className={`text-center p-3 w-1/2 border-black border-b-2 flex justify-center items-baseline text-5xl font-medium outline-none ${
             amount === 0 ? "text-gray-500" : "text-black"
           }`}
           value={amount}
         />
 
-        <div className="flex w-full md:w-1/2 border-b-2 pb-10  p-2 justify-evenly">
+        <div className="flex w-full md:w-1/2 border-b-2 pb-10 p-2 justify-evenly">
           {[500, 1000, 3000].map((i) => (
             <button
               key={`item-${i}`}
@@ -416,6 +423,14 @@ export default function Amount({
             </button>
           ))}
         </div>
+        <textarea
+          onChange={(event) => setPaymentDescription(event.target.value)}
+          placeholder="Açıklama"
+          type="number"
+          className="border text-gray-500 p-3 rounded-lg w-full xs:w-1/2 focus:outline-none resize-none shadow-sm scrollbar-thin scrollbar-thumb-blue-500"
+          value={paymentDescription}
+        />
+ 
         <div className="grid grid-cols-2 text-center gap-x-3 w-1/2">
           <button
             onClick={() => setActionStep(0)}

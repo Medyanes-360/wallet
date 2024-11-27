@@ -1,4 +1,3 @@
-import { button } from "framer-motion/client";
 
 export default function NavigationItem({
   id,

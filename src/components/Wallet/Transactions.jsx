@@ -1,50 +1,52 @@
 "use client";
 import { IoIosSearch, IoMdOptions } from "react-icons/io";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Tabs from "./Tabs";
 import TransactionItem from "./TransactionItem";
+import { useSession } from "next-auth/react";
+import { postAPI } from "../../services/fetchAPI";
 
 export default function Transactions() {
   const [selected, setSelected] = useState("Tümü");
-  const testTransactions = [
-    {
-      title: "Harcama",
-      subtitle: "subtitle",
-      date: "10 Eylül",
-      amount: "-500.00",
-    },
-    {
-      title: "Yükleme",
-      subtitle: "subtitl2e",
-      date: "10 2Eylül",
-      amount: "+2000.00",
-    },
-    {
-      title: "Çekme",
-      subtitle: "subtitle3",
-      date: "10 Eylül3",
-      amount: "-3000.00",
-    },
-    {
-      title: "Harcama",
-      subtitle: "subtitle",
-      date: "10 Ekim",
-      amount: "-620.00",
-    },
-    {
-      title: "Yükleme",
-      subtitle: "subtitl2e",
-      date: "10 Ağustos",
-      amount: "+5000.00",
-    },
-    {
-      title: "Çekme",
-      subtitle: "subtitle3",
-      date: "10 Aralık",
-      amount: "-1000.00",
-    },
-  ];
+  const [transactions, setTransactions] = useState([]);
+  const [wallet, setWallet] = useState({})
+
+  const { data: session } = useSession();
+  const userData = session.user;
+
+  const getWalletData = () => {
+    if (!transactions.length) {
+      postAPI("/wallet", { userId: userData.id })
+        .then((res) => {
+          if (res.status === 200 || res.status === "success") {
+            setTransactions(res.data.transactions.reverse());
+            setWallet(res.data.wallet)
+          } else {
+            console.log(res.message);
+          }
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
+    }
+  };
+
+  useEffect(() => {
+    getWalletData();
+  }, [userData.id]);
+
+  const filteredTransactions = useMemo(
+    () =>
+      selected === "Tümü"
+        ? transactions
+        : transactions.filter(
+            (item) =>
+              item.type === (selected === "Gelen" ? "deposit" : "withdraw")
+          ),
+    [transactions, selected]
+  );
+
   return (
     <div className="lg:mx-10 ">
       <div className="md:p-6 p-2 flex flex-col gap-y-10">
@@ -64,12 +66,16 @@ export default function Transactions() {
             </button>
           </div>
         </div>
-        <Tabs />
+        <Tabs selected={selected} setSelected={setSelected} />
 
         <div className="flex justify-center items-center ">
-          <ul className="mt-4 w-full max-w-xl  shadow border rounded-lg divide-y bg-white">
-            {testTransactions.map((item,index) => (
-              <TransactionItem key={`${index}-${item.title}`} transactionData={item} />
+          <ul className="mt-4 w-full max-w-xl shadow border rounded-lg divide-y bg-white">
+            {filteredTransactions.map((item, index) => (
+              <TransactionItem
+                key={`${index}-${item.title}`}
+                transactionData={item}
+                currency={wallet.currency}
+              />
             ))}
           </ul>
         </div>

@@ -25,11 +25,11 @@ export default function MainComponent() {
   } else {
     return (
       <div className="grid grid-cols-5 min-h-screen md:p-0">
-        <div className="h-screen hidden md:block md:col-span-1  bg-white">
+        <div className="h-screen hidden md:block md:col-span-1 bg-white">
           <WalletNavigation page={page} setPage={setPage} />
         </div>
         <div
-          className={` col-span-5 md:col-span-4 lg:col-span-3 pb-24 md:pb-0  md:px-5 lg:pt-5 md:pt-8 bg-gradient-to-r  from-gray-100 to-purple-50 `}
+          className={`col-span-5 md:col-span-4 lg:col-span-3 pb-24 md:pb-0  md:px-5 lg:pt-5 md:pt-8 bg-gradient-to-r  from-gray-100 to-purple-50 `}
         >
           <WalletMain page={page} setPage={setPage}></WalletMain>
         </div>

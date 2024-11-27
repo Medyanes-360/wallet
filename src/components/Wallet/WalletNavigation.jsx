@@ -4,8 +4,13 @@ import { RiArrowDownSLine } from "react-icons/ri";
 import { IoPersonOutline } from "react-icons/io5";
 
 import NavigationItem from "./NavigationItem";
+import { useSession } from "next-auth/react";
 
 export default function WalletNavigation({ type = "desktop", page, setPage }) {
+
+  const {data: session} = useSession()
+  const userName = session.user.fullName
+
   // type= desktop/mobile
   const navigationItems = [
     {
@@ -43,7 +48,7 @@ export default function WalletNavigation({ type = "desktop", page, setPage }) {
     );
   } else {
     return (
-      <div className="min-h-full flex flex-col justify-between bg-white">
+      <div className="relative min-h-screen flex flex-col bg-white">
         <div>
           <div className="border-b p-4 mb-5">
             <h3 className="text-lg font-medium text-purple-800">Cüzdanım</h3>
@@ -61,11 +66,11 @@ export default function WalletNavigation({ type = "desktop", page, setPage }) {
             ))}
           </div>
         </div>
-        <button className="p-3 my-5 mx-2 rounded-lg shadow flex items-center gap-x-3">
-          <div className="p-2 px-3 rounded-lg bg-purple-100 text-purple-900 flex justify-center items-center">
+        <button className="fixed bottom-5 left-2 p-2 lg:p-3 rounded-lg shadow flex items-center gap-x-3 bg-white">
+          <div className="p-1 px-2 lg:p-2 lg:px-3 rounded-lg bg-purple-100 text-purple-900 flex justify-center items-center">
             <IoPersonOutline size={20} />
           </div>
-          <div className="p-1 w-full text-left">Ramazan Ünal</div>
+          <div className="p-1 w-full text-left text-[14px] lg:text-base">{userName}</div>
           <div className="p-1 flex justify-center items-center">
             <RiArrowDownSLine />
           </div>

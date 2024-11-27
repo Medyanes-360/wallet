@@ -1,3 +1,5 @@
+import { createNewData } from "./serviceOperations";
+
 const logPaymentAttempt = async (
   userId,
   amount,
@@ -6,7 +8,7 @@ const logPaymentAttempt = async (
   statusDescription
 ) => {
   try {
-    await prisma.paymentLog.create({
+    await createNewData("PaymentLog", {
       data: {
         userId,
         amount,

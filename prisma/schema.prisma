@@ -45,19 +45,21 @@ model Wallet {
 }
 
 model Transaction {
-  id          String   @id @default(uuid()) @map("_id")
-  walletId    String   @db.ObjectId
-  userId      String?  @db.ObjectId
-  type        String //Money deposit withdraw transfer
-  amount      Float
-  status      String // SUCCESS PENDING FAILED CANCELLED
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  description String?
+  id            String   @id @default(uuid()) @map("_id")
+  walletId      String   @db.ObjectId
+  userId        String?  @db.ObjectId
+  bankAccountId String   @unique @db.ObjectId
+  type          String //Money deposit withdraw transfer
+  amount        Float
+  status        String // SUCCESS PENDING FAILED CANCELLED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  description   String?
 
-  PaymentLog PaymentLog? //Transaction can exist without log, but the log cannot be created without transactionId to refer to it
-  Wallet     Wallet      @relation(fields: [walletId], references: [id])
-  User       User?       @relation(fields: [userId], references: [id])
+  BankAccount BankAccount? @relation(fields: [bankAccountId], references: [id])
+  PaymentLog  PaymentLog? //Transaction can exist without log, but the log cannot be created without transactionId to refer to it
+  Wallet      Wallet       @relation(fields: [walletId], references: [id])
+  User        User?        @relation(fields: [userId], references: [id])
 }
 
 model PaymentLog {
@@ -74,12 +76,16 @@ model PaymentLog {
 }
 
 model BankAccount {
-  id            String @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String @db.ObjectId
-  accountNumber String @unique
-  balance       Float  @default(0)
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String @db.ObjectId
+  cardName   String
+  cardNumber String @unique
+  iban       String @unique
+  expiryDate String
+  cvv        Int
 
-  user User @relation(fields: [userId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  transaction Transaction? @relation
 }
 
 model IPlist {

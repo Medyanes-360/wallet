@@ -48,3 +48,25 @@ input[type=number] {
   }
 }
 /** ---- */
+
+/* Add this in your global CSS file */
+.scrollbar-thin {
+  scrollbar-width: thin; /* For Firefox */
+}
+
+.scrollbar-thumb-blue-500 {
+  scrollbar-color: #6b21a8 #e5e7eb; /* For Firefox */
+}
+
+.scrollbar-thumb-blue-500::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-thumb-blue-500::-webkit-scrollbar-thumb {
+  background-color: #6b21a8;
+  border-radius: 9999px;
+}
+
+.scrollbar-thumb-blue-500::-webkit-scrollbar-track {
+  background-color: #e5e7eb;
+}
