@@ -7,10 +7,7 @@ import {
   getUniqueData,
   updateDataByAny,
 } from "../../../services/serviceOperations";
-
-const SUCCESS = "SUCCESS";
-const PENDING = "PENDING";
-const FAILURE = "FAILURE";
+import { SUCCESS, FAILED } from "../../../constant";
 
 const MAX_AMOUNT = 50000;
 const MIN_AMOUNT = 250;
@@ -25,7 +22,8 @@ const handle = async (req, res) => {
       const paymentData = await req.body;
       // decrypted the encrypted retrieved data
       const decryptedData = hashPaymentData(paymentData, "dec");
-      const { userId, amount, transactionId, description } = decryptedData;
+      const { userId, amount, transactionId, description, cardNumber, iban } =
+        decryptedData;
       // parse the amount to number which is string
       const parsedAmount = parseFloat(amount);
 
@@ -37,6 +35,8 @@ const handle = async (req, res) => {
         });
       }
 
+      console.log(cardNumber);
+
       // check the user data in db
       const user = await getUniqueData("User", { id: userId });
       if (!user) {
@@ -44,7 +44,7 @@ const handle = async (req, res) => {
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           "User not found"
         );
         return res
@@ -58,7 +58,7 @@ const handle = async (req, res) => {
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           "The action cannot be performed"
         );
         return res.status(403).json({
@@ -85,7 +85,7 @@ const handle = async (req, res) => {
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           "Daily payment limit exceeded"
         );
         return res.status(403).json({
@@ -100,7 +100,7 @@ const handle = async (req, res) => {
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           `Maximum transaction amount exceeded (Limit: ${MAX_AMOUNT} TL)`
         );
         return res.status(403).json({
@@ -115,7 +115,7 @@ const handle = async (req, res) => {
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           `Minimum transaction amount (Minimum: ${MIN_AMOUNT} TL)`
         );
         return res.status(403).json({
@@ -131,7 +131,7 @@ const handle = async (req, res) => {
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           `Wallet not found for the user`
         );
         return res.status(404).json({
@@ -143,13 +143,16 @@ const handle = async (req, res) => {
       // Perform the transaction atomically to avoid partial updates
       const deposit = await prisma.$transaction(async () => {
         // Record the transaction
+        // const encryptedTransaction = hashPaymentData(newTransaction, "enc");
         const newTransaction = await createNewData("Transaction", {
           id: transactionId,
           userId,
           walletId: wallet.id,
+          cardNumber,
+          iban,
           type: "deposit",
           amount: parsedAmount,
-          status: PENDING,
+          status: SUCCESS,
           description: description || "No description provided",
         });
 

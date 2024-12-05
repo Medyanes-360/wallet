@@ -1,14 +1,12 @@
 import {
   createNewData,
   getUniqueData,
-  getAllData
+  getAllData,
 } from "../../../services/serviceOperations";
 import logPaymentAttempt from "../../../services/logPaymentAttempt";
 import prisma from "../../../../prisma";
 import hashPaymentData from "../../../services/hashPaymentData";
-
-const PENDING = "PENDING";
-const FAILURE = "FAILURE";
+import { FAILED, PENDING } from "../../../constant";
 
 const handle = async (req, res) => {
   if (req.method === "POST") {
@@ -18,9 +16,10 @@ const handle = async (req, res) => {
       // transactionId: to idenify the payment process
       // description: is not necessary, but if a user desires, they can leave a description for the payment
       const paymentData = await req.body;
-       // decrypted the encrypted retrieved data
+      // decrypted the encrypted retrieved data
       const decryptedData = hashPaymentData(paymentData, "dec");
-      const { userId, amount, transactionId, description } = decryptedData
+      const { userId, amount, transactionId, description, cardNumber, iban } =
+        decryptedData;
       // parse the amount to number which is string
       const parsedAmount = parseFloat(amount);
 
@@ -39,7 +38,7 @@ const handle = async (req, res) => {
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           "User not found"
         );
         return res
@@ -53,7 +52,7 @@ const handle = async (req, res) => {
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           "The action cannot be performed"
         );
         return res.status(403).json({
@@ -81,7 +80,7 @@ const handle = async (req, res) => {
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           "Daily payment limit exceeded"
         );
         return res.status(403).json({
@@ -97,7 +96,7 @@ const handle = async (req, res) => {
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           `Wallet not found for the user`
         );
         return res.status(404).json({
@@ -106,12 +105,12 @@ const handle = async (req, res) => {
         });
       }
       // Ensure the wallet has enough funds to cover the requested amount
-      if(parsedAmount > wallet.balance) {
+      if (parsedAmount > wallet.balance) {
         await logPaymentAttempt(
           userId,
           parsedAmount,
           transactionId,
-          FAILURE,
+          FAILED,
           `Insufficient funds in wallet`
         );
         return res.status(400).json({
@@ -126,6 +125,8 @@ const handle = async (req, res) => {
           id: transactionId,
           userId,
           walletId: wallet.id,
+          cardNumber,
+          iban,
           type: "withdraw",
           amount: parsedAmount,
           status: PENDING,

@@ -14,16 +14,18 @@ export default function Amount({
   setAmount,
   setIfSavedCardUsed,
   ifSavedCardUsed,
+  selectedCard,
 }) {
   const [maxAmount, setMaxAmount] = useState(50000);
   const [minAmount, setMinAmount] = useState(250);
   const [riskAmount, setRiskAmount] = useState(10000); // Onay gerektiren para miktarı
   const [processAmount, setProcessAmount] = useState(0); // giriş yapmış kullanıcıdan alacağımız o gün yaptığı işlem sayısı
-  const [paymentDescription, setPaymentDescription] = useState("")
+  const [paymentDescription, setPaymentDescription] = useState("");
 
   const { data: session } = useSession();
   const userData = session.user;
   const dailyPaymentLimit = userData.dailyPaymentLimit;
+
   // amount olarak girilebilecek değerleri kontrol eder
   const handleChange = (event) => {
     const value = event.target.value;
@@ -57,6 +59,8 @@ export default function Amount({
           amount,
           transactionId,
           description: paymentDescription,
+          cardNumber: selectedCard.cardNumber,
+          iban: selectedCard.iban
         };
         const encrypedData = hashPaymentData(paymentData, "enc");
 
@@ -64,8 +68,8 @@ export default function Amount({
           .then((res) => {
             if (res.status === 200 || res.status === "success") {
               console.log(res.data);
-              setAmount("")
-              setPaymentDescription("")
+              setAmount("");
+              setPaymentDescription("");
               return Swal.fire({
                 title: `Para yatırma işlemi`,
                 text: `${amount} TL için ${res.message}`,
@@ -110,13 +114,17 @@ export default function Amount({
             userId: userData.id,
             amount,
             transactionId,
-            description: "My new payment",
+            description: paymentDescription,
+            cardNumber: selectedCard.cardNumber,
+            iban: selectedCard.iban
           };
           const encrypedData = hashPaymentData(paymentData, "enc");
-          postAPI("/withdraw", {...encrypedData})
+          postAPI("/withdraw", { ...encrypedData })
             .then((res) => {
               if (res?.status === 200 || res?.status === "success") {
                 console.log(res?.data);
+                setPaymentDescription("");
+                setAmount("");
                 return Swal.fire({
                   title: `Para çekme işlemi`,
                   text: `${amount} TL için ${res?.message}`,
@@ -257,8 +265,8 @@ export default function Amount({
                       title: "Süre Doldu",
                       text: "İşlem süresi dolduğu için iptal edildi.",
                       icon: "error",
-                      timer: 2000, 
-                      showConfirmButton: false, 
+                      timer: 2000,
+                      showConfirmButton: false,
                     });
                   }
                 }, 1000);
@@ -320,8 +328,8 @@ export default function Amount({
                 title: "Süre Doldu",
                 text: "İşlem süresi dolduğu için iptal edildi.",
                 icon: "error",
-                timer: 2000, 
-                showConfirmButton: false, 
+                timer: 2000,
+                showConfirmButton: false,
               });
               return false;
             }
@@ -430,7 +438,7 @@ export default function Amount({
           className="border text-gray-500 p-3 rounded-lg w-full xs:w-1/2 focus:outline-none resize-none shadow-sm scrollbar-thin scrollbar-thumb-blue-500"
           value={paymentDescription}
         />
- 
+
         <div className="grid grid-cols-2 text-center gap-x-3 w-1/2">
           <button
             onClick={() => setActionStep(0)}

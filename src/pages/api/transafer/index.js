@@ -5,21 +5,18 @@ import {
   getUniqueData,
   updateDataByAny,
 } from "../../../services/serviceOperations";
-
-const SUCCESS = "SUCCESS";
-const PENDING = "PENDING";
-const FAILURE = "FAILURE";
+import { SUCCESS, PENDING, FAILED } from "../../../constant";
 
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
       const {
-        senderUserId,  // userEmail: to check whether the user exists or not
+        senderUserId, // userEmail: to check whether the user exists or not
         receiverUserEmail, // receiverUserEmail: to check whether the user exists or not
-        amount,  // amount: to log the amount of money and make the process
-        requiredAmount,  // this is a required amount that the receiverUser set
-        transactionId,  // transactionId: to idenify the payment process
-        description,  // description: is not necessary, but if a user desires, they can leave a description for the paypment
+        amount, // amount: to log the amount of money and make the process
+        requiredAmount, // this is a required amount that the receiverUser set
+        transactionId, // transactionId: to idenify the payment process
+        description, // description: is not necessary, but if a user desires, they can leave a description for the paypment
       } = await req.body;
 
       // check the received data
@@ -44,7 +41,7 @@ const handle = async (req, res) => {
           missingUser,
           amount,
           transactionId,
-          "FAILURE",
+          FAILED,
           missingUserMessage
         );
 
@@ -60,7 +57,7 @@ const handle = async (req, res) => {
           senderUser.id,
           amount,
           transactionId,
-          FAILURE,
+          FAILED,
           "The action cannot be performed"
         );
         return res.status(403).json({
@@ -85,7 +82,7 @@ const handle = async (req, res) => {
           senderUser.id,
           amount,
           transactionId,
-          FAILURE,
+          FAILED,
           "Daily payment limit exceeded"
         );
         return res.status(403).json({
@@ -102,7 +99,7 @@ const handle = async (req, res) => {
           senderUser.id,
           amount,
           transactionId,
-          FAILURE,
+          FAILED,
           `The transaction amount is less than the required (${requiredAmount} TL).`
         );
         return res.status(403).json({
@@ -127,7 +124,7 @@ const handle = async (req, res) => {
           missingUserId,
           amount,
           transactionId,
-          FAILURE,
+          FAILED,
           missingUserMessage
         );
 

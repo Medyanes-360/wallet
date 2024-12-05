@@ -1,14 +1,12 @@
 import { getUniqueData } from "../../../../../services/serviceOperations";
 
 const handle = async (req, res) => {
-  if (req.method === "POST") {
+  if (req.method === "GET") {
     try {
       // retrieve user id to get user's bankAccounts
-      const { userId, bankAccountId } = await req.body;
-      const data = await getUniqueData("Transaction", {
-        userId,
-        bankAccountId
-      });
+      // const { userId, bankAccountId } = await req.body
+      const { id } = await req.query;
+      const data = await getUniqueData("BankAccount", { id });
       if (!data || data.error || data === undefined) {
         throw new Error(data.error);
       }

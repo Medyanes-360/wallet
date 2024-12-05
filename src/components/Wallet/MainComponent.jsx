@@ -11,6 +11,9 @@ export default function MainComponent() {
   useActivityTracker();
   // session varsa login true olur
 
+  // const [wallet, setWallet] = useState(null);
+  // const [transactions, setTransactions] = useState([]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       if (window.sessionStorage.getItem("loginSession") === "true" && !login) {
@@ -29,9 +32,9 @@ export default function MainComponent() {
           <WalletNavigation page={page} setPage={setPage} />
         </div>
         <div
-          className={`col-span-5 md:col-span-4 lg:col-span-3 pb-24 md:pb-0  md:px-5 lg:pt-5 md:pt-8 bg-gradient-to-r  from-gray-100 to-purple-50 `}
+          className={`col-span-5 md:col-span-4 lg:col-span-3 pb-24 md:pb-0 md:px-5 lg:pt-5 md:pt-8 bg-gradient-to-r  from-gray-100 to-purple-50 `}
         >
-          <WalletMain page={page} setPage={setPage}></WalletMain>
+          <WalletMain page={page} setPage={setPage} />
         </div>
         <div className="hidden lg:block lg:col-span-1 lg:bg-white"></div>
         <div className="md:hidden bottom-0 left-0 mb-3 w-full fixed z-20">

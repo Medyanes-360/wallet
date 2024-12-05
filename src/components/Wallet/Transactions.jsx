@@ -10,18 +10,18 @@ import { postAPI } from "../../services/fetchAPI";
 export default function Transactions() {
   const [selected, setSelected] = useState("Tümü");
   const [transactions, setTransactions] = useState([]);
-  const [wallet, setWallet] = useState({})
+  const [wallet, setWallet] = useState(null);
 
   const { data: session } = useSession();
   const userData = session.user;
 
   const getWalletData = () => {
-    if (!transactions.length) {
+    if (!wallet && !transactions?.length) {
       postAPI("/wallet", { userId: userData.id })
         .then((res) => {
           if (res.status === 200 || res.status === "success") {
-            setTransactions(res.data.transactions.reverse());
-            setWallet(res.data.wallet)
+            setTransactions(res.data.transactions?.reverse());
+            setWallet(res.data.wallet);
           } else {
             console.log(res.message);
           }
@@ -34,13 +34,13 @@ export default function Transactions() {
 
   useEffect(() => {
     getWalletData();
-  }, [userData.id]);
+  }, [userData?.id]);
 
   const filteredTransactions = useMemo(
     () =>
       selected === "Tümü"
         ? transactions
-        : transactions.filter(
+        : transactions?.filter(
             (item) =>
               item.type === (selected === "Gelen" ? "deposit" : "withdraw")
           ),
@@ -70,11 +70,11 @@ export default function Transactions() {
 
         <div className="flex justify-center items-center ">
           <ul className="mt-4 w-full max-w-xl shadow border rounded-lg divide-y bg-white">
-            {filteredTransactions.map((item, index) => (
+            {filteredTransactions?.map((item, index) => (
               <TransactionItem
                 key={`${index}-${item.title}`}
                 transactionData={item}
-                currency={wallet.currency}
+                currency={wallet?.currency}
               />
             ))}
           </ul>

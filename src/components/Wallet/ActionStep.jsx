@@ -3,6 +3,7 @@ import { RiArrowLeftWideLine } from "react-icons/ri";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { postAPI } from "../../services/fetchAPI";
+import hashPaymentData from "../../services/hashPaymentData";
 
 // Luhn algoritmasını kullanarak kart numarasını doğrulayan fonksiyon
 const luhnCheck = (cardNumber) => {
@@ -125,10 +126,15 @@ export default function ActionStep({
           if (values.saveCard) {
             // saveCard(values);
 
-            // Save the card in DB
-            postAPI("/bank-account/post-bank-account", {
+            const cardDetails = {
               userId: userData.id,
               ...values,
+            };
+            const encryptedCardDetails = hashPaymentData(cardDetails, "enc");
+
+            // Save the card in DB
+            postAPI("/bank-account/post-bank-account", {
+              ...encryptedCardDetails,
             })
               .then((res) => {
                 if (res.status === 200 || res.status === "success") {

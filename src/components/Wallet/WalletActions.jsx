@@ -15,6 +15,7 @@ export default function WalletActions({ setPage }) {
   const [ifSavedCardUsed, setIfSavedCardUsed] = useState(false);
   const [wallet, setWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [selectedCard, setSelectedCard] = useState(null);
 
   const [actionStep, setActionStep] = useState(0); // işlem basamağı
 
@@ -22,7 +23,7 @@ export default function WalletActions({ setPage }) {
   const userData = session.user;
 
   const getWalletData = () => {
-    if (!wallet && !transactions.length) {
+    if (!wallet && !transactions?.length) {
       postAPI("/wallet", { userId: userData.id })
         .then((res) => {
           if (res.status === 200 || res.status === "success") {
@@ -117,13 +118,16 @@ export default function WalletActions({ setPage }) {
         </div>
         <ul className="mt-4 shadow border rounded-lg divide-y">
           {/** aşağıdaki slice işlemi son 4 işlemi alıyor eğer 4<= ise hepsini yazıyor */}
-          {transactions.slice(-4).reverse().map((item, index) => (
-            <TransactionItem
-              key={`${index}-${item.title}`}
-              transactionData={item}
-              currency={wallet.currency}
-            />
-          ))}
+          {transactions
+            ?.slice(-4)
+            .reverse()
+            .map((item, index) => (
+              <TransactionItem
+                key={`${index}-${item.title}`}
+                transactionData={item}
+                currency={wallet?.currency}
+              />
+            ))}
         </ul>
       </div>
     );
@@ -145,6 +149,7 @@ export default function WalletActions({ setPage }) {
             setIfSavedCardUsed={setIfSavedCardUsed}
             showSelectedAction={showSelectedAction}
             updateActionStep={setActionStep}
+            setSelectedCard={setSelectedCard}
           />
         </div>
       ) : actionStep === 2 ? (
@@ -173,7 +178,7 @@ export default function WalletActions({ setPage }) {
           showSelectedAction={showSelectedAction}
           setActionStep={setActionStep}
           amount={amount}
-          
+          selectedCard={selectedCard}
         />
       ) : (
         ""

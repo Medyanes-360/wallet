@@ -10,6 +10,7 @@ export default function CardMain({
   showSelectedAction,
   updateActionStep,
   setIfSavedCardUsed,
+  setSelectedCard,
   ifSavedCardUsed,
 }) {
   const [bankAccounts, setBankAccounts] = useState([]);
@@ -60,6 +61,7 @@ export default function CardMain({
               setActionStep={updateActionStep}
               key={card.id}
               card={card}
+              setSelectedCard={setSelectedCard}
             />
           ))}
         </ul>

@@ -5,6 +5,7 @@ export default function CardItem({
   setActionStep,
   setIfSavedCardUsed,
   ifSavedCardUsed,
+  setSelectedCard,
   card
 }) {
   return (
@@ -13,6 +14,7 @@ export default function CardItem({
         onClick={() => {
           setActionStep((val) => val + 2);
           setIfSavedCardUsed(true);
+          setSelectedCard(card)
         }}
         className="w-full flex p-4  rounded-lg justify-between items-center text-sm shadow"
       >

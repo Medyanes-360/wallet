@@ -1,3 +1,4 @@
+import hashPaymentData from "../../../../services/hashPaymentData";
 import {
   createNewData,
   getUniqueData,
@@ -6,8 +7,10 @@ import {
 const handle = async (req, res) => {
   if (req.method === "POST") {
     try {
+      const cardDetails = await req.body;
+      const decryptedData = hashPaymentData(cardDetails, "dec");
       const { userId, cardNumber, cardName, iban, expiryDate, cvv } =
-        await req.body;
+        decryptedData;
 
       if (!userId || !cardNumber || !cardName || !iban || !expiryDate || !cvv) {
         return res.status(400).json({
@@ -42,7 +45,7 @@ const handle = async (req, res) => {
       const bankAccount = await getUniqueData("BankAccount", {
         cardNumber,
       });
-      
+
       if (bankAccount) {
         return res.status(400).json({
           status: "error",

@@ -45,21 +45,21 @@ model Wallet {
 }
 
 model Transaction {
-  id            String   @id @default(uuid()) @map("_id")
-  walletId      String   @db.ObjectId
-  userId        String?  @db.ObjectId
-  bankAccountId String   @unique @db.ObjectId
-  type          String //Money deposit withdraw transfer
-  amount        Float
-  status        String // SUCCESS PENDING FAILED CANCELLED
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  description   String?
+  id          String   @id @default(uuid()) @map("_id")
+  walletId    String   @db.ObjectId
+  userId      String?  @db.ObjectId
+  cardNumber  String?
+  iban        String?
+  type        String //Money deposit withdraw transfer
+  amount      Float
+  status      String // SUCCESS PENDING FAILED CANCELLED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  description String?
 
-  BankAccount BankAccount? @relation(fields: [bankAccountId], references: [id])
-  PaymentLog  PaymentLog? //Transaction can exist without log, but the log cannot be created without transactionId to refer to it
-  Wallet      Wallet       @relation(fields: [walletId], references: [id])
-  User        User?        @relation(fields: [userId], references: [id])
+  PaymentLog PaymentLog? //Transaction can exist without log, but the log cannot be created without transactionId to refer to it
+  Wallet     Wallet      @relation(fields: [walletId], references: [id])
+  User       User?       @relation(fields: [userId], references: [id])
 }
 
 model PaymentLog {
@@ -82,10 +82,9 @@ model BankAccount {
   cardNumber String @unique
   iban       String @unique
   expiryDate String
-  cvv        Int
+  cvv        String
 
-  user        User         @relation(fields: [userId], references: [id])
-  transaction Transaction? @relation
+  user User @relation(fields: [userId], references: [id])
 }
 
 model IPlist {
