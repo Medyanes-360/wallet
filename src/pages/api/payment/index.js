@@ -35,8 +35,6 @@ const handle = async (req, res) => {
         });
       }
 
-      console.log(cardNumber);
-
       // check the user data in db
       const user = await getUniqueData("User", { id: userId });
       if (!user) {

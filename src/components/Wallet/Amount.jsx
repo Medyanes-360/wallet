@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Swal from "sweetalert2";
-import { RiArrowRightWideLine, RiArrowLeftWideLine } from "react-icons/ri";
+import { RiArrowLeftWideLine } from "react-icons/ri";
 import { postAPI } from "../../services/fetchAPI";
 import { v4 as uuidv4 } from "uuid";
 import { useSession } from "next-auth/react";
@@ -59,7 +59,7 @@ export default function Amount({
           amount,
           transactionId,
           description: paymentDescription,
-          cardNumber: selectedCard.cardNumber,
+          cardNumber: selectedCard?.cardNumber,
           iban: selectedCard.iban
         };
         const encrypedData = hashPaymentData(paymentData, "enc");

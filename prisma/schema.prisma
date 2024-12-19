@@ -19,7 +19,7 @@ model User {
   isVerified        Boolean   @default(false) // For email verification
   isBlocked         Boolean   @default(false) // To block suspicious accounts
   role              UserRole  @default(USER) // User role (USER, ADMIN, etc.)
-  dailyPaymentLimit Int       @default(5)
+  dailyPaymentLimit Int       @default(3)
 
   walletId String? @unique @db.ObjectId
 
