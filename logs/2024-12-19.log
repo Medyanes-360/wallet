@@ -44,3 +44,118 @@
     "Missing session"
   ]
 }
+2024-12-19 14:19:42 [info] {
+  "method": "POST",
+  "url": "http://localhost:3000/api/payment",
+  "ip": "::1",
+  "timestamp": "2024-12-19T22:19:41.574Z",
+  "sessionStatus": "No session",
+  "headers": {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "referer": "http://localhost:3000/wallet",
+    "x-forwarded-for": "::1"
+  },
+  "body": {
+    "userId": "ea03919305115de645722e075f3278beadd7a2b7acbb67d37c857b803f31bd06",
+    "amount": "d669619094081863cd5b5a2731f2224d",
+    "transactionId": "5344bf768034479e76f2c9c348eaf7db0aaf4664d4e7a798e683514c04ed2a5f4d018824ea045d09a068a9cb0fb7638b",
+    "description": "efedc7b98cd490f12ebd9f8b4fa6f393",
+    "cardNumber": "059060fc3c6fe366849b8406b3a4a557de243572bc45b623a36ba068c5f6a97e",
+    "iban": "c2e355687ebf69b389f38813a469db4d8548d899d247beafde6ad5287c007ca7"
+  },
+  "anomalies": [
+    "Missing session"
+  ]
+}
+2024-12-19 14:19:53 [info] {
+  "method": "POST",
+  "url": "http://localhost:3000/api/payment",
+  "ip": "::1",
+  "timestamp": "2024-12-19T22:19:53.279Z",
+  "sessionStatus": "No session",
+  "headers": {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "referer": "http://localhost:3000/wallet",
+    "x-forwarded-for": "::1"
+  },
+  "body": {
+    "userId": "ea03919305115de645722e075f3278beadd7a2b7acbb67d37c857b803f31bd06",
+    "amount": "f4a2f9b4fbcb9643988ad9e0e861c81b",
+    "transactionId": "b275f62c97fc3751779ffb7fb2385181172518db8eadf5238f45be8f3945650b94691204431c866d677a7b9ddb8c3253",
+    "description": "efedc7b98cd490f12ebd9f8b4fa6f393",
+    "cardNumber": "ffeb3aaaf8ef862ad985d390582ab6ab622f678151d6223050a80d70e1844da1",
+    "iban": "06fde3ed2c2927b5340c1aaa26af453613fa20aeb75a56f81da6f2c853f27ebb"
+  },
+  "anomalies": [
+    "Missing session"
+  ]
+}
+2024-12-19 14:20:20 [info] {
+  "method": "POST",
+  "url": "http://localhost:3000/api/payment",
+  "ip": "::1",
+  "timestamp": "2024-12-19T22:20:20.428Z",
+  "sessionStatus": "No session",
+  "headers": {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "referer": "http://localhost:3000/wallet",
+    "x-forwarded-for": "::1"
+  },
+  "body": {
+    "userId": "ea03919305115de645722e075f3278beadd7a2b7acbb67d37c857b803f31bd06",
+    "amount": "25124dcb27b817eb816f0d12760453f2",
+    "transactionId": "aa83675e282cdab6278c0f5579e8ad8d527575ac8d93a9fe0c29d770a172a49f6801621fd0e885972dedd143c8a875fb",
+    "description": "efedc7b98cd490f12ebd9f8b4fa6f393",
+    "cardNumber": "ffeb3aaaf8ef862ad985d390582ab6ab622f678151d6223050a80d70e1844da1",
+    "iban": "06fde3ed2c2927b5340c1aaa26af453613fa20aeb75a56f81da6f2c853f27ebb"
+  },
+  "anomalies": [
+    "Missing session"
+  ]
+}
+2024-12-19 22:51:54 [info] {
+  "method": "POST",
+  "url": "http://localhost:3000/api/withdraw",
+  "ip": "::1",
+  "timestamp": "2024-12-20T06:51:53.820Z",
+  "sessionStatus": "No session",
+  "headers": {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "referer": "http://localhost:3000/wallet",
+    "x-forwarded-for": "::1"
+  },
+  "body": {
+    "userId": "ea03919305115de645722e075f3278beadd7a2b7acbb67d37c857b803f31bd06",
+    "amount": "25124dcb27b817eb816f0d12760453f2",
+    "transactionId": "ec177d8aced398e647e820f2cab1380289f151729bb3d7ce755d4ebdeb8eb7220ceb589e67a917ab634e9e9c3a95e9d3",
+    "description": "efedc7b98cd490f12ebd9f8b4fa6f393",
+    "cardNumber": "40143c1dfb7d6b0945649e8e8774e7bdbd907357bb7b1e6f056f6fd0bb2bf5e2",
+    "iban": "b069148804811b0496c161183115cacdb69e68c7a284aeda9917fd948c91a8aa"
+  },
+  "anomalies": [
+    "Missing session"
+  ]
+}
+2024-12-19 22:54:18 [info] {
+  "method": "POST",
+  "url": "http://localhost:3000/api/withdraw",
+  "ip": "::1",
+  "timestamp": "2024-12-20T06:54:18.252Z",
+  "sessionStatus": "No session",
+  "headers": {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "referer": "http://localhost:3000/wallet",
+    "x-forwarded-for": "::1"
+  },
+  "body": {
+    "userId": "ea03919305115de645722e075f3278beadd7a2b7acbb67d37c857b803f31bd06",
+    "amount": "d669619094081863cd5b5a2731f2224d",
+    "transactionId": "9ce8f24727031709c256b0d24d475d303361127cc2e2d72e58b997dc3ea57e0f77b816e77ebb2538fd5e5c6f0ad9e884",
+    "description": "efedc7b98cd490f12ebd9f8b4fa6f393",
+    "cardNumber": "16f46415abe49036e027b4ff9e17fc1de907a54695470aaea1397be43e225639",
+    "iban": "c55545a8cfec76820d994ce659b2b5bfa61b17bcd563ade89e8037b4fec3d556"
+  },
+  "anomalies": [
+    "Missing session"
+  ]
+}

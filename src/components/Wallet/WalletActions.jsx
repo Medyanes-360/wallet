@@ -23,25 +23,28 @@ export default function WalletActions({ setPage }) {
   const userData = session.user;
 
   const getWalletData = () => {
-    if (!wallet && !transactions?.length) {
-      postAPI("/wallet", { userId: userData.id })
-        .then((res) => {
-          if (res.status === 200 || res.status === "success") {
-            setWallet(res.data.wallet);
-            setTransactions(res.data.transactions);
-          } else {
-            console.log(res.message);
-          }
-        })
-        .catch((error) => {
-          console.error(error.message);
-        });
-    }
+    console.log("getWalletData");
+    console.log("actionStep ", actionStep);
+
+    postAPI("/wallet", { userId: userData.id })
+      .then((res) => {
+        if (res.status === 200 || res.status === "success") {
+          setWallet(res.data.wallet);
+          setTransactions(res.data.transactions);
+        } else {
+          console.log(res.message);
+        }
+      })
+      .catch((error) => {
+        console.error(error.message);
+      });
   };
 
   useEffect(() => {
-    getWalletData();
-  }, [userData.id, actionStep]);
+    if (actionStep === 0) {
+      getWalletData();
+    }
+  }, [userData?.id, actionStep]);
 
   const Balance = () => {
     return (
