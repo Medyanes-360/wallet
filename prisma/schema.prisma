@@ -45,7 +45,7 @@ model Wallet {
 }
 
 model Transaction {
-  id          String   @id @default(uuid()) @map("_id")
+  id          String   @id @map("_id")
   walletId    String   @db.ObjectId
   userId      String?  @db.ObjectId
   cardNumber  String?

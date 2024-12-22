@@ -1,0 +1,23 @@
+2024-12-22 13:50:50 [info] {
+  "method": "POST",
+  "url": "http://localhost:3000/api/payment",
+  "ip": "::1",
+  "timestamp": "2024-12-22T21:50:50.019Z",
+  "sessionStatus": "No session",
+  "headers": {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "referer": "http://localhost:3000/wallet",
+    "x-forwarded-for": "::1"
+  },
+  "body": {
+    "userId": "ea03919305115de645722e075f3278beadd7a2b7acbb67d37c857b803f31bd06",
+    "amount": "b54b92601e44a327cfb8ce94c84b512c",
+    "transactionId": "289c9e06a993109d10f48bc38d61303e8d18d6be5d367d59a9965954d76c1b817f10e3375e2ce8895e7459b62637a21f3d96a61ead35e14fb14cc0e363f68c1b978224ca3bac03151cf3b5e5ca80be1125310952bcedcfe85df7c3cca0fe1d2166ee4f2f547083d1e8feaee070b8449186e2f11292f2d52613dc9b87e1726280f111ffde9b59259ee83cf26a2132357ed58847219ff0f30c05addf098bf2724ee419c9018a26935f1a823392bfadaabb1bf0cb3159e0b65f0f1e59565a29b47eb7e8561b67673b25afc3ec6c9b01cf88ad6af89fb96ce264bdb4586991c848720f40b6b6f81c75ac9ed5e657b427874c00cb1bd4c0227abe3fe7ba4d27f6b18e",
+    "description": "efedc7b98cd490f12ebd9f8b4fa6f393",
+    "cardNumber": "16f46415abe49036e027b4ff9e17fc1de907a54695470aaea1397be43e225639",
+    "iban": "c55545a8cfec76820d994ce659b2b5bfa61b17bcd563ade89e8037b4fec3d556"
+  },
+  "anomalies": [
+    "Missing session"
+  ]
+}

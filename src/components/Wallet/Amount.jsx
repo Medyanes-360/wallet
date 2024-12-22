@@ -53,14 +53,26 @@ export default function Amount({
         const riskStatus = await checkRiskAmount(amount); // Miktarı kontrol et
         if (!riskStatus) return;
 
-        const transactionId = uuidv4();
+        const transactionId = await postAPI("/createTransactionId", {
+          userId: userData.id,
+          amount,
+        }).then((res) => {
+          if (res.status === 200 || res.status === "success") {
+            console.log(res.data);
+            return res.data;
+          } else {
+            console.warn("Failed to create transaction ID:", res.message);
+            return null;
+          }
+        });
+
         const paymentData = {
           userId: userData.id,
           amount,
           transactionId,
           description: paymentDescription,
           cardNumber: selectedCard?.cardNumber,
-          iban: selectedCard.iban
+          iban: selectedCard.iban,
         };
         const encrypedData = hashPaymentData(paymentData, "enc");
 
@@ -109,14 +121,26 @@ export default function Amount({
           const riskStatus = await checkRiskAmount(amount); // Miktarı kontrol et
           if (!riskStatus) return;
 
-          const transactionId = uuidv4();
+          const transactionId = await postAPI("/createTransactionId", {
+            userId: userData.id,
+            amount,
+          }).then((res) => {
+            if (res.status === 200 || res.status === "success") {
+              console.log(res.data);
+              return res.data;
+            } else {
+              console.warn("Failed to create transaction ID:", res.message);
+              return null;
+            }
+          });
+
           const paymentData = {
             userId: userData.id,
             amount,
             transactionId,
             description: paymentDescription,
             cardNumber: selectedCard.cardNumber,
-            iban: selectedCard.iban
+            iban: selectedCard.iban,
           };
           const encrypedData = hashPaymentData(paymentData, "enc");
           postAPI("/withdraw", { ...encrypedData })
